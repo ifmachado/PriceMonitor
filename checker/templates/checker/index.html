@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page-title %}
+Fashion Price Checker
+{% endblock %}
+
+{% comment %} {% block css_files %} 
+<link rel="stylesheet" href="{%static "blog/post.css"%}">
+<link rel="stylesheet" href="{%static "blog/index.css"%}">
+{% endblock %} {% endcomment %}
+
+
+{% block content %}
+<header class="masthead">
+    <div class="container position-relative">
+        <div class="row justify-content-center">
+            <div class="col-xl-6">
+                <div class="text-center text-white">
+                    <!-- Page heading-->
+                    <h1 class="mb-5">We help you save money while completing your dream wardrobe!</h1>
+                    <h3 class="mb-5">We support the following brands:</h3>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="brands-item mx-auto mb-5 mb-lg-0">
+                                <a target="_blank" href="http://www.byparra.com">
+                                <img class="img-fluid mb-3" src="{% static "/checker/images/byparra-logo.png" %}" alt="ByParra" /> 
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="brands-item mx-auto mb-5 mb-lg-0">
+                                <a target="_blank" href="http://www.ganni.com">
+                                <img class="img-fluid mb-3" src="{% static "/checker/images/ganni-logo-vector.svg" %}" alt="Ganni" />
+                                </a> 
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="brands-item mx-auto mb-5 mb-lg-0">
+                                <a target="_blank" href="http://thefrankieshop.com">
+                                <img class="img-fluid mb-3" src="{% static "/checker/images/frankie-shop-logo.webp" %}" alt="The Frankie Shop" /> 
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>                 
+                    <!-- Signup form-->
+                    <!-- * * * * * * * * * * * * * * *-->
+                    <!-- * * SB Forms Contact Form * *-->
+                    <!-- * * * * * * * * * * * * * * *-->
+                    <!-- This form is pre-integrated with SB Forms.-->
+                    <!-- To make this form functional, sign up at-->
+                    <!-- https://startbootstrap.com/solution/contact-forms-->
+                    <!-- to get an API token!-->
+                    <form class="form-subscribe" id="contactForm" data-sb-form-api-token="API_TOKEN">
+                        <!-- Form input-->
+                        <div class="form-group row">
+                            <label for="URL" class="col-sm-2 col-form-label-lg">Product's website:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control form-control-lg" id="URL" type="text" placeholder="URL" data-sb-validations="required" />
+                                <div class="invalid-feedback text-white" data-sb-feedback="URL:required">URL is required.</div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="emailAddress" class="col-sm-2 col-form-label-lg">Email address:</label>
+                            <div class=="col-sm-10">
+                                <input class="form-control form-control-lg" id="URL" type="emailAddress" placeholder="Email address" data-sb-validations="required,email" />
+                                <div class="invalid-feedback text-white" data-sb-feedback="emailAddress:required">Email Address is required.</div>
+                                <div class="invalid-feedback text-white" data-sb-feedback="emailAddress:email">Email Address Email is not valid.</div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="desiredPrice" class="col-sm-2 col-form-label-lg">Desired price:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control form-control-lg" id="desiredPrice" type="text" placeholder="Price" data-sb-validations="required,email" />
+                                <small id="pricelHelp" class="form-text text-muted">Get notified when the product reaches this price.</small>
+                                <div class="invalid-feedback text-white" data-sb-feedback="desiredPrice:required">Desired price is required.</div>
+                             </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <button class="btn btn-primary btn-lg disabled" id="submitButton" type="submit">Submit</button>
+                            </div>
+                        </div>
+                        </div>
+                        <!-- Submit success message-->
+                        <!---->
+                        <!-- This is what your users will see when the form-->
+                        <!-- has successfully submitted-->
+                        <div class="d-none" id="submitSuccessMessage">
+                            <div class="text-center mb-3">
+                                <div class="fw-bolder">Form submission successful!</div>
+                                <p>We're keeping an eye on your item for you</p>
+                                <a href="">
+                                <button class="btn btn-primary btn-lg disabled" id="submitButton" type="submit">Click here to see your product's page</button>
+                                </a>
+                            </div>
+                        </div>
+                        </div>
+                        <!-- Submit error message-->
+                        <!---->
+                        <!-- This is what your users will see when there is-->
+                        <!-- an error submitting the form-->
+                        <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Image Showcases-->
+<section class="showcase">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background-image: url('{% static "checker/images/product-search.jpg" %}')"></div>
+            <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                <h2>Find the product</h2>
+                <p class="lead mb-0">Enter your favorite product's website.</p>
+            </div>
+        </div>
+        <div class="row g-0">
+            <div class="col-lg-6 text-white showcase-img" style="background-image: url('{% static "checker/images/notifications.jpg" %}')"></div>
+            <div class="col-lg-6 my-auto showcase-text">
+                <h2>Set up notifications</h2>
+                <p class="lead mb-0">Choose a desired price and enter the e-mail address you'd like to get notifications when the product reaches the desired price.</p>
+            </div>
+        </div>
+        <div class="row g-0">
+            <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background-image: url('{% static "checker/images/graph.jpg" %}')"></div>
+            <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                <h2>Check Price History</h2>
+                <p class="lead mb-0">Get a custom link to monitor the product's price.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Footer-->
+<footer class="footer bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 h-100 text-center text-lg-start my-auto">
+                <ul class="list-inline mb-2">
+                    <li class="list-inline-item"><a href="#!">Contact</a></li>
+                    <li class="list-inline-item"><a href="#top">Back to Top</a></li>
+
+                </ul>
+                <p class="text-muted small mb-4 mb-lg-0">&copy; Your Website 2022. All Rights Reserved.</p>
+            </div>
+            <div class="col-lg-6 h-100 text-center text-lg-end my-auto">
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item me-4">
+                        <a href="#!"><i class="bi-facebook fs-3"></i></a>
+                    </li>
+                    <li class="list-inline-item me-4">
+                        <a href="#!"><i class="bi-twitter fs-3"></i></a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="#!"><i class="bi-instagram fs-3"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}
