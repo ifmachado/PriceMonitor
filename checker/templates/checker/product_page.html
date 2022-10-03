@@ -1,0 +1,40 @@
+<!-- Product section-->
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load widget_tweaks %}
+
+{% block page-title %}
+Fashion Price Checker
+{% endblock %}
+
+{% comment %} {% block css_files %} 
+<link rel="stylesheet" href="{%static "blog/post.css"%}">
+<link rel="stylesheet" href="{%static "blog/index.css"%}">
+{% endblock %} {% endcomment %}
+
+
+{% block content %}
+<section class="py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="row gx-4 gx-lg-5 align-items-center">
+            <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="{%static product.img %}" alt="..." /></div>
+            <div class="col-md-6">
+                <h1 class="display-5 fw-bolder"> {{ product.name }}</h1>
+                <div class="fs-5 mb-5">
+                    {% for price in product_prices%}
+                    <span>{{ price.price }}</span>
+                    {%endfor%}
+                </div>
+                <div>
+                <h3 class="lead">Price History</p>
+                <img src="{%static "/checker/images/graph_placeholder.png" %}"/>
+                </div>
+                <div>
+                    <button class="btn btn-primary btn-sm disabled ">Stop monitoring</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
