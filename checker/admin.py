@@ -7,7 +7,7 @@ class PriceHistoryAdmin(admin.ModelAdmin):
     fields = ("linked_product", "price")
     readonly_fields = ("date",)
     list_display = ("linked_product", "date", "price")
-    list_filter = ("linked_product", "date")    
+    list_filter = ("linked_product", "date")
 
     class Meta:
         verbose_name ="PriceHistory"

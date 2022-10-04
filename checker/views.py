@@ -1,4 +1,6 @@
+from collections import OrderedDict
 from datetime import datetime
+import tempfile
 from urllib.parse import urlencode
 from urllib.request import url2pathname
 from django.shortcuts import render, redirect
@@ -14,6 +16,9 @@ from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
 from django.views import View
 from django.db.models import Prefetch
+import pygal
+from pygal.style import LightSolarizedStyle
+from itertools import islice
 
 
 
@@ -37,7 +42,7 @@ brand_specs = {'Frankie_Shop':
 class IndexView(View):
     def post(self,request):
         user_form = UserForm(request.POST)
-        context = {}
+        my_url = ""
 
         if user_form.is_valid():
             user_data = user_form.cleaned_data
@@ -61,10 +66,10 @@ class IndexView(View):
             product_price = PriceHistory(linked_product=new_product[0], price=first_price)
             product_price.save()
 
-            base_url = reverse('submit-sucessful')  # 1 /thank-you/
+            base_url = reverse('submit-sucessful')  # 1 thank-you/
             query_string =  urlencode({'auth': product_to_user.auth_token})  # 2 product_id=bhejwbhr374637hfd
-            url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
-        return redirect(url)
+            my_url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
+        return redirect(my_url)
 
     def get(self,request):
         user_form = UserForm(request.GET)
@@ -176,6 +181,13 @@ class IndexView(View):
     def auth_token(self):
         user_token = secrets.token_urlsafe(16)
         return user_token
+
+
+class ThanksView(View):
+    def get(self, request):
+        product_auth = request.GET.get('auth')
+        return render(request, "checker/submit_sucess.html", {'product_auth' : product_auth})
+
     
 class ProductDetailView(DetailView):
     template_name = "checker/product_page.html"
@@ -186,14 +198,46 @@ class ProductDetailView(DetailView):
      product_id = self.object.linked_product.id
      price_history = PriceHistory.objects.filter(linked_product__id=product_id)
      context["product"] = self.object.linked_product
-     context["product_prices"] = price_history
+     context["current_price"], context["graph"] = self.last_price_and_graph(price_history)
      return context
 
-     #.prefetch_related(Prefetch('current_product', queryset=Product.objects.filter(id=product_id)))
+    def last_price_and_graph(self, price_history):
+        price_to_date = OrderedDict()
+        all_entried = []
 
-class ThanksView(View):
+        for entry in price_history:
+            entry_date = entry.date
+            entry_price = entry.price
+            price_to_date[entry_date] = entry_price
+            product_id = entry.linked_product.id
 
-    def get(self,request):
-        context = {}
-        product_auth = request.GET.get('auth')
-        return render(request, "checker/submit_sucess.html", {'product_auth' : product_auth})
+   
+        # create a line chart with pygal's pre-built LightColorizedStyle style and 20degree x label rotation.
+        line_chart = pygal.Line(interpolate='cubic', style=LightSolarizedStyle, x_label_rotation=20)
+
+        # chart title
+        today = entry_date.today()
+        today_formatted = today.strftime("%m/%d/%Y")
+        line_chart.title = today_formatted
+
+        # loop through temps_per_city key,value pairs.
+        for key, value in price_to_date.items():
+            fomatted_key=key.strftime("%d/%m/%Y")
+            # add a line to the chart where reference value is the key in dict (date),
+            # and value is the list of prices.
+            line_chart.add(fomatted_key, value)
+
+        chart_name = str(product_id) + ".svg"
+        chart_path = os.path.join("checker/static/checker/images/price_charts/", chart_name)
+
+        line_chart.render_to_file(chart_path)
+
+        chart_path= "checker/images/price_charts/" + chart_name
+
+        last_date, last_price = self.last(price_to_date)
+
+        return last_price, chart_path
+    
+    def last(self, ord_dict):
+        last_item = next(reversed(ord_dict.items()))
+        return last_item
