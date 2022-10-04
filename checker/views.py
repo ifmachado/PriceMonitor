@@ -198,6 +198,7 @@ class ProductDetailView(DetailView):
      product_id = self.object.linked_product.id
      price_history = PriceHistory.objects.filter(linked_product__id=product_id)
      context["product"] = self.object.linked_product
+     context["title"] = self.object.linked_product.name.title()
      context["current_price"], context["graph"] = self.last_price_and_graph(price_history)
      return context
 
@@ -217,7 +218,7 @@ class ProductDetailView(DetailView):
 
         # chart title
         today = entry_date.today()
-        today_formatted = today.strftime("%m/%d/%Y")
+        today_formatted = today.strftime("%d/%m/%Y")
         line_chart.title = today_formatted
 
         # loop through temps_per_city key,value pairs.
