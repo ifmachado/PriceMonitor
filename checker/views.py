@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from datetime import datetime
+from datetime import date, datetime
 import tempfile
 from urllib.parse import urlencode
 from urllib.request import url2pathname
@@ -17,8 +17,6 @@ from django.views.generic import DetailView
 from django.views import View
 from django.db.models import Prefetch
 import pygal
-from pygal.style import LightSolarizedStyle
-from itertools import islice
 
 
 
@@ -204,30 +202,32 @@ class ProductDetailView(DetailView):
 
     def last_price_and_graph(self, price_history):
         price_to_date = OrderedDict()
-        all_entried = []
-
         for entry in price_history:
-            entry_date = entry.date
+            entry_date = entry.date.strftime('%d-%m-%Y')
             entry_price = entry.price
             price_to_date[entry_date] = entry_price
             product_id = entry.linked_product.id
 
    
         # create a line chart with pygal's pre-built LightColorizedStyle style and 20degree x label rotation.
-        line_chart = pygal.Line(interpolate='cubic', style=LightSolarizedStyle, x_label_rotation=20)
+        line_chart = pygal.Line(x_label_rotation=20)
 
         # chart title
-        today = entry_date.today()
+        today = date.today()
         today_formatted = today.strftime("%d/%m/%Y")
         line_chart.title = today_formatted
 
-        # loop through temps_per_city key,value pairs.
+        date_list = []
+        price_list = []
+    
+        # loop through price_to_dat key,value pairs.
         for key, value in price_to_date.items():
-            fomatted_key=key.strftime("%d/%m/%Y")
-            # add a line to the chart where reference value is the key in dict (date),
-            # and value is the list of prices.
-            line_chart.add(fomatted_key, value)
+            if key not in date_list:
+                date_list.append(key)
+                price_list.append(value)
 
+        line_chart.x_labels = date_list   
+        line_chart.add("Price", price_list)
         chart_name = str(product_id) + ".svg"
         chart_path = os.path.join("checker/static/checker/images/price_charts/", chart_name)
 
