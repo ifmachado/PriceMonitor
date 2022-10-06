@@ -20,8 +20,8 @@ class User(models.Model):
         return self.user_email
 
 class ProductToUser(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    linked_product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    linked_product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     desired_price = models.IntegerField()
     auth_token = models.CharField(max_length=20, primary_key=True)
 
@@ -30,7 +30,7 @@ class ProductToUser(models.Model):
         return f"{self.user_id.user_email} - {self.linked_product.name}"
 
 class PriceHistory(models.Model):
-    linked_product = models.ForeignKey(Product, related_name="current_product", on_delete=models.CASCADE)
+    linked_product = models.ForeignKey(Product, related_name="current_product", on_delete=models.DO_NOTHING)
     date = models.DateTimeField(auto_now=True)
     price = models.IntegerField(null=True)
 

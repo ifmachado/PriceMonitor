@@ -29,7 +29,9 @@ Fashion Price Checker
                </div>
                 <img src="{%static graph %}" alt="..." />
                 <div>
-                    <button class="btn btn-primary btn-sm disabled ">Stop monitoring</button>
+                    <a href ="{% url "confirm-delete" product_auth%}"
+                        <button class="btn btn-primary btn-sm">Stop monitoring</button>
+                    </a>
                 </div>
             </div>
         </div>

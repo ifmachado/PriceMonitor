@@ -4,7 +4,7 @@ import tempfile
 from urllib.parse import urlencode
 from urllib.request import url2pathname
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from .forms import UserForm
 from .models import Product, User, PriceHistory, ProductToUser
 from bs4 import BeautifulSoup
@@ -17,6 +17,8 @@ from django.views.generic import DetailView
 from django.views import View
 from django.db.models import Prefetch
 import pygal
+from django.views.generic.edit import DeleteView
+
 
 
 
@@ -195,6 +197,7 @@ class ProductDetailView(DetailView):
      context = super().get_context_data(**kwargs)
      product_id = self.object.linked_product.id
      price_history = PriceHistory.objects.filter(linked_product__id=product_id)
+     context["product_auth"] = self.object.auth_token
      context["product"] = self.object.linked_product
      context["title"] = self.object.linked_product.name.title()
      context["current_price"], context["graph"] = self.last_price_and_graph(price_history)
@@ -242,3 +245,19 @@ class ProductDetailView(DetailView):
     def last(self, ord_dict):
         last_item = next(reversed(ord_dict.items()))
         return last_item
+
+class DeleteProductView(DeleteView):
+    model = ProductToUser
+    template_name = "checker/confirm_delete.html"
+    success_url = reverse_lazy("delete-sucessful")
+
+    def get_context_data(self,**kwargs):
+        context=super().get_context_data(**kwargs)
+        context['title'] = self.object.linked_product.name.title()
+        return context
+
+class DeleteSucessful(TemplateView):
+    template_name = "checker/delete_sucess.html"
+
+
+
