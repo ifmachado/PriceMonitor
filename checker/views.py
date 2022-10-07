@@ -3,6 +3,7 @@ from datetime import date, datetime
 import tempfile
 from urllib.parse import urlencode
 from urllib.request import url2pathname
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from .forms import UserForm
@@ -17,7 +18,9 @@ from django.views.generic import DetailView
 from django.views import View
 from django.db.models import Prefetch
 import pygal
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, UpdateView
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
 
@@ -33,7 +36,8 @@ brand_specs = {'Frankie_Shop':
                  'image' : ("div", {"class": "gallery_images"})
                  },
             'Ganni':
-                 {'price': ("span", {"class": "product-price__sales"}),
+                 {'price_sale': ("span", {"class": "product-price__sales"}),
+                 'price_regular': ("span", {"class": "product-price__normal"}),
                  'image' : ("div", {"class": "b-product-images__large"}),
                  }
             }
@@ -47,10 +51,11 @@ class IndexView(View):
         if user_form.is_valid():
             user_data = user_form.cleaned_data
             user_url = user_data['product_url']
-            product_name,product_brand = self.fetch_name_brand(user_url)
-            out_src, new_img = self.fetch_image(user_url, product_brand)
+            soup = self.scrape_from_url(user_url)
+            product_name,product_brand = self.fetch_name_brand(user_url, soup)
+            out_src, new_img = self.fetch_image(product_brand, soup)
             
-            new_product=Product.objects.get_or_create(
+            user_product=Product.objects.get_or_create(
                 product_url=user_url, 
                 name=product_name, 
                 brand=product_brand,
@@ -59,16 +64,33 @@ class IndexView(View):
 
             user = User.objects.get_or_create(user_email=user_data['user_email'])
 
-            product_to_user = ProductToUser(user_id=user[0], linked_product=new_product[0], desired_price=user_data["desired_price"], auth_token = self.auth_token())
-            product_to_user.save()
-
-            first_price = self.fetch_price(new_product[0])
-            product_price = PriceHistory(linked_product=new_product[0], price=first_price)
+            first_price = self.fetch_price(user_product[0], soup)
+            product_price = PriceHistory(linked_product=user_product[0], price=first_price)
             product_price.save()
 
-            base_url = reverse('submit-sucessful')  # 1 thank-you/
-            query_string =  urlencode({'auth': product_to_user.auth_token})  # 2 product_id=bhejwbhr374637hfd
-            my_url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
+            product_to_user = ProductToUser.objects.filter(user_id=user[0], linked_product=user_product[0]).first()
+            if not product_to_user:
+                new_prod_user = ProductToUser(user_id=user[0], linked_product=user_product[0], desired_price=user_data["desired_price"], auth_token = self.auth_token())
+                new_prod_user.save()
+
+                #redirect to thank-you URL
+                base_url = reverse('submit-sucessful')  # 1 thank-you/
+                query_string =  urlencode({'auth': new_prod_user.auth_token})  # 2 auth=bhejwbhr374637hfd
+                my_url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
+
+            else:
+                if user_data["desired_price"] != product_to_user.desired_price:
+                    product_to_user.price_alt = "True"
+                else:
+                    product_to_user.price_alt = "False"
+                
+                product_to_user.save()
+
+                #redirect to submit repeat URL
+                base_url = reverse('duplicate')  # 1 duplicate/
+                query_string =  urlencode({'auth': product_to_user.auth_token, 'new-price': user_data["desired_price"]}) # 2 auth=bhejwbhr374637hfd
+                my_url = '{}?{}'.format(base_url, query_string)  # 3 /duplicate/?auth=bhejwbhr374637hfd&new-pre=120
+
         return redirect(my_url)
 
     def get(self,request):
@@ -77,8 +99,19 @@ class IndexView(View):
 
     #create a detail view for product page
 
-    def fetch_name_brand(self,product_url):
-        #get product brand by stripping url
+    def scrape_from_url(self, product_url):
+    
+        headers = {'user-agent': 
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
+
+        r = requests.get(url=product_url, headers=headers)
+
+        # parse content through beautifulsoup parser.
+        soup = BeautifulSoup(r.content, "html.parser")
+
+        return soup
+
+    def fetch_name_brand(self,product_url, soup):
 
         if "ganni" in product_url:
             brand = "Ganni"
@@ -89,23 +122,12 @@ class IndexView(View):
         elif "byparra" in product_url:
             brand = "ByParra"
 
-        # sends a GET request to the specified url.
-        r = requests.get(product_url)
-
-        # parse content through beautifulsoup parser.
-        soup = BeautifulSoup(r.content, "html.parser")
-
         # get product's name
         name = soup.find_all("h1")[0].text
 
         return (name, brand)
 
-    def fetch_image(self,product_url, brand):
-        # sends a GET request to the specified url.
-        r = requests.get(product_url)
-
-        # parse content through beautifulsoup parser.
-        soup = BeautifulSoup(r.content, "html.parser")
+    def fetch_image(self,brand,soup):
 
         # get image class from dict
         image_arg_one = (brand_specs[brand]['image'])[0]
@@ -119,9 +141,14 @@ class IndexView(View):
         img_src = images['src']
 
         img_src_link = "http://"
-        if img_src.startswith("//"):
+
+        if img_src.startswith("https://") or img_src.startswith("http://"):
+            img_src_link = img_src
+            
+        elif img_src.startswith("//"):
             after_http = img_src.lstrip("//")
             img_src_link += after_http
+
         else:
             img_src_link += img_src
 
@@ -144,39 +171,30 @@ class IndexView(View):
 
         return (img_src, file_path)
 
-    def fetch_price(self,product):
-
-        product_url = product.product_url
+    def fetch_price(self,product, soup):
 
         brand = product.brand
 
-        # sends a GET request to the specified url.
-        r = requests.get(product_url)
-
-        # parse content through beautifulsoup parser.
-        soup = BeautifulSoup(r.content, "html.parser")
-        
-        #get HTML identifiers from specific website. First arg is tag type, second is class name.
-        price_arg_one = (brand_specs[brand]['price'])[0]
-        price_arg_two = (brand_specs[brand]['price'][1]['class'])
-
-        # find specific tag in parsed content and get the text element out of it.
-        price = soup.find_all(price_arg_one, price_arg_two)[0].text
-
-        # for some websites, there's a different tag that will hold the item price text when it's on sale.
-        # therefore, a check will be performed to see if the tag is empty.
-        if price == "":
-            int_price = 0
-
-        # if value is retrieved, get only digit values, which will then be stored again on DB
-        # (for this test, a dictionary is used instead).
+        if brand == 'Ganni':
+            arg = ['price_sale', 'price_regular']
         else:
+            arg = ['price']
+
+        for tag in arg:
+            price_arg_one = (brand_specs[brand][tag])[0]
+            price_arg_two = (brand_specs[brand][tag][1]['class'])
+
+            # find specific tag in parsed content and get the text element out of it.
+            price = soup.find_all(price_arg_one, price_arg_two)[0].text
+            if price == "": 
+                continue
+
             int_price = int(''.join(v for v in price if v.isdigit()))
             if brand == "ByParra":
-                corrected_price = str(int_price).rstrip("00")
+                corrected_price = str(int_price)[:-2]
                 int_price = corrected_price
 
-        return int_price
+            return int_price
 
     def auth_token(self):
         user_token = secrets.token_urlsafe(16)
@@ -187,6 +205,40 @@ class ThanksView(View):
     def get(self, request):
         product_auth = request.GET.get('auth')
         return render(request, "checker/submit_sucess.html", {'product_auth' : product_auth})
+
+
+class RepeatedSubmission(View):
+    def get_object(self):
+        return ProductToUser.objects.get(pk=self.request.GET.get('auth'))
+
+    def get_title(self):
+        return self.get_object().linked_product.name.title()
+
+    def get(self,request):
+        return render(request, "checker/submit_duplicate.html", {'product' : self.get_object(), 'title' : self.get_title()})
+
+    def post(self,request):
+        object = self.get_object()
+        object.desired_price = self.request.GET.get('new-price')
+        object.save()
+        return render(request, "checker/submit_change_sucessful.html", {'product' : object})
+
+# class RepeatedSubmission(UpdateView):
+#     model = ProductToUser
+#     fields = ('desired_price',)
+#     template_name = "checker/submit_duplicate.html"
+#     success_url = reverse_lazy("change-sucessful")
+    
+
+#     def get_object(self):
+#         return ProductToUser.objects.get(pk=self.request.GET.get('auth'))
+        
+
+#     def get_context_data(self, **kwargs):
+#         context=super().get_context_data(**kwargs)
+#         context['product'] = self.object
+#         context['title'] = self.object.linked_product.name.title()
+#         return context
 
     
 class ProductDetailView(DetailView):
@@ -248,7 +300,7 @@ class ProductDetailView(DetailView):
 
 class DeleteProductView(DeleteView):
     model = ProductToUser
-    template_name = "checker/confirm_delete.html"
+    template_name = "checker/delete_confirm.html"
     success_url = reverse_lazy("delete-sucessful")
 
     def get_context_data(self,**kwargs):

@@ -14,7 +14,7 @@ class PriceHistoryAdmin(admin.ModelAdmin):
         verbose_name_plural = "PriceHistory"
 
 class ProductToUserAdmin(admin.ModelAdmin):
-    fields = ("user_id", "linked_product", "desired_price", "auth_token")
+    fields = ("user_id", "linked_product", "desired_price", "auth_token", "price_alt")
     list_display = ("user_id", "linked_product")
     list_filter = ("user_id", "linked_product", "auth_token")
  

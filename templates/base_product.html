@@ -18,24 +18,13 @@
         {% block css_files %} {% endblock %}
 	</head>
 	<body>
-        <a name="top"></a>  
+        <a name="top"></a>
         <nav class="navbar navbar-light bg-light static-top">
             <div class="container">
                 <a class="navbar-brand" href="/">Fashion Price Tracker</a>
                 <a class="btn btn-primary" href="#Contact">Contact</a>
             </div>
         </nav>
-        <header class="masthead">
-            <div class="container position-relative">
-                <div class="row justify-content-center">
-                    <div class="col-xl-6">
-                        <div class="text-center text-white">
-                            {% block header %}{% endblock %}
-                        </div>  
-                    </div>
-                </div>
-            </div>
-        </header>
         {% block content %}{% endblock %}
 	
 <footer>
@@ -64,7 +53,6 @@
             </div>
         </div>
     </div>
-
 </footer>
 </body>
 </html>

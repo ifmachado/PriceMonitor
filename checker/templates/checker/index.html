@@ -13,52 +13,43 @@ Fashion Price Checker
 {% endblock %} {% endcomment %}
 
 
-{% block content %}
-<header class="masthead">
-    <div class="container position-relative">
-        <div class="row justify-content-center">
-            <div class="col-xl-6">
-                <div class="text-center text-white">
-                    <!-- Page heading-->
-                    <h1 class="mb-5">We help you save money while completing your dream wardrobe!</h1>
-                    <h3 class="mb-5">We support the following brands:</h3>
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="brands-item mx-auto mb-5 mb-lg-0">
-                                <a target="_blank" href="http://www.byparra.com">
-                                <img class="img-fluid mb-3" src="{% static "/checker/images/byparra-logo.png" %}" alt="ByParra" /> 
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="brands-item mx-auto mb-5 mb-lg-0">
-                                <a target="_blank" href="http://www.ganni.com">
-                                <img class="img-fluid mb-3" src="{% static "/checker/images/ganni-logo-vector.svg" %}" alt="Ganni" />
-                                </a> 
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="brands-item mx-auto mb-5 mb-lg-0">
-                                <a target="_blank" href="http://thefrankieshop.com">
-                                <img class="img-fluid mb-3" src="{% static "/checker/images/frankie-shop-logo.webp" %}" alt="The Frankie Shop" /> 
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>                 
-                    <!-- Price Monitor Submission form-->
-                    <form method="POST" action="{% url "starting-page" %}" class="form-subscribe" id="contactForm">
-                        {% csrf_token %}
-                        <div class=“form-group row”>
-                            {{ form|crispy }}
-                            <button class="btn btn-primary btn-lg ">Submit</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>  
+{% block header %}
+<h1 class="mb-5">We help you save money while completing your dream wardrobe!</h1>
+<h3 class="mb-5">We support the following brands:</h3>
+<div class="row">
+    <div class="col-lg-4">
+        <div class="brands-item mx-auto mb-5 mb-lg-0">
+            <a target="_blank" href="http://www.byparra.com">
+                <img class="img-fluid mb-3" src="{% static "/checker/images/byparra-logo.png" %}" alt="ByParra" /> 
+            </a>
+        </div>
     </div>
-</header>
+    <div class="col-lg-4">
+        <div class="brands-item mx-auto mb-5 mb-lg-0">
+            <a target="_blank" href="http://www.ganni.com">
+            <img class="img-fluid mb-3" src="{% static "/checker/images/ganni-logo-vector.svg" %}" alt="Ganni" />
+            </a> 
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="brands-item mx-auto mb-5 mb-lg-0">
+            <a target="_blank" href="http://thefrankieshop.com">
+            <img class="img-fluid mb-3" src="{% static "/checker/images/frankie-shop-logo.webp" %}" alt="The Frankie Shop" /> 
+            </a>
+        </div>
+    </div>
+
+</div>                 
+<!-- Price Monitor Submission form-->
+<form method="POST" action="{% url "starting-page" %}" class="form-subscribe" id="contactForm">
+    {% csrf_token %}
+    <div class=“form-group row”>
+        {{ form|crispy }}
+        <button class="btn btn-primary btn-lg ">Submit</button>
+    </div>
+</form>
+{% endblock %}
+{% block content %}
 <section class="showcase">
     {% include "./includes/how_to.html"%}
 </section>
