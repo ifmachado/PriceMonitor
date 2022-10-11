@@ -74,7 +74,12 @@ class IndexView(View):
                 query_string =  urlencode({'auth': new_prod_user.auth_token})  # 2 auth=bhejwbhr374637hfd
                 my_url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
 
-                self.send_confirm_mail(user[0].user_email, user_product[0].name, f"http://127.0.0.1:8000/auth={new_prod_user.auth_token}")
+                send_mail(
+                        'Price Monitor - you started monitoring a new product',
+                        f'Hey! \n You\'re now monitoring prices for {user_product[0].name.title()}.\n Here is your product\'s link: http://127.0.0.1:8000/auth={new_prod_user.auth_token}',
+                        'fashionpricetracker@gmail.com',
+                        [user[0].user_email],
+                        fail_silently=False,)
 
             else:
                 if user_data["desired_price"] != product_to_user.desired_price:
@@ -88,8 +93,6 @@ class IndexView(View):
                 base_url = reverse('duplicate')  # 1 duplicate/
                 query_string =  urlencode({'auth': product_to_user.auth_token, 'new-price': user_data["desired_price"]}) # 2 auth=bhejwbhr374637hfd
                 my_url = '{}?{}'.format(base_url, query_string)  # 3 /duplicate/?auth=bhejwbhr374637hfd&new-pre=120
-
-                self.send_confirm_mail(user[0].user_email, user_product[0].name, f"http://127.0.0.1:8000/auth={product_to_user.auth_token}")
 
             return redirect(my_url)
 
@@ -200,13 +203,7 @@ class IndexView(View):
         user_token = secrets.token_urlsafe(16)
         return user_token
 
-    def send_confirm_mail(self, user_email, product_name, product_url):
-        send_mail(
-            'Price Monitor - you started monitoring a new product',
-            f'Hey! \n You\'re now monitoring prices for {product_name.title()}.\n Here is your product\'s link: {product_url}.',
-            'fashionpricetracker@gmail.com',
-            [user_email],
-            fail_silently=False,)
+
 
 
 
