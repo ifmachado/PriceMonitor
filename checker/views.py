@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from datetime import date
 from urllib.parse import urlencode
-from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from .forms import UserForm
@@ -203,10 +202,6 @@ class IndexView(View):
         user_token = secrets.token_urlsafe(16)
         return user_token
 
-
-
-
-
 class ThanksView(View):
     def get(self, request):
         product_auth = request.GET.get('auth')
@@ -228,25 +223,7 @@ class RepeatedSubmission(View):
         object.desired_price = self.request.GET.get('new-price')
         object.save()
         return render(request, "checker/submit_change_sucessful.html", {'product' : object})
-
-# class RepeatedSubmission(UpdateView):
-#     model = ProductToUser
-#     fields = ('desired_price',)
-#     template_name = "checker/submit_duplicate.html"
-#     success_url = reverse_lazy("change-sucessful")
-    
-
-#     def get_object(self):
-#         return ProductToUser.objects.get(pk=self.request.GET.get('auth'))
-        
-
-#     def get_context_data(self, **kwargs):
-#         context=super().get_context_data(**kwargs)
-#         context['product'] = self.object
-#         context['title'] = self.object.linked_product.name.title()
-#         return context
-
-    
+   
 class ProductDetailView(DetailView):
     template_name = "checker/product_page.html"
     model = ProductToUser
@@ -317,5 +294,6 @@ class DeleteProductView(DeleteView):
 class DeleteSucessful(TemplateView):
     template_name = "checker/delete_sucess.html"
 
-
+class ContactView(TemplateView):
+    template_name = "checker/contact.html"
 
