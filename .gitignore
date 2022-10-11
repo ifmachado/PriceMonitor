@@ -3,3 +3,7 @@ __pycache__
 
 # Environments
 .env
+
+#Dinamically created graphs and product images
+checker/static/checker/images/price_charts
+checker/static/checker/images/product_images
