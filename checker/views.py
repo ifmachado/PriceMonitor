@@ -1,8 +1,6 @@
 from collections import OrderedDict
-from datetime import date, datetime
-import tempfile
+from datetime import date
 from urllib.parse import urlencode
-from urllib.request import url2pathname
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
@@ -16,11 +14,9 @@ import os
 from django.views.generic.base import TemplateView 
 from django.views.generic import DetailView
 from django.views import View
-from django.db.models import Prefetch
 import pygal
-from django.views.generic.edit import DeleteView, UpdateView
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from django.views.generic.edit import DeleteView
+from django.core.mail import send_mail
 
 
 
@@ -78,6 +74,8 @@ class IndexView(View):
                 query_string =  urlencode({'auth': new_prod_user.auth_token})  # 2 auth=bhejwbhr374637hfd
                 my_url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
 
+                self.send_confirm_mail(user[0].user_email, user_product[0].name, f"http://127.0.0.1:8000/auth={new_prod_user.auth_token}")
+
             else:
                 if user_data["desired_price"] != product_to_user.desired_price:
                     product_to_user.price_alt = "True"
@@ -91,7 +89,9 @@ class IndexView(View):
                 query_string =  urlencode({'auth': product_to_user.auth_token, 'new-price': user_data["desired_price"]}) # 2 auth=bhejwbhr374637hfd
                 my_url = '{}?{}'.format(base_url, query_string)  # 3 /duplicate/?auth=bhejwbhr374637hfd&new-pre=120
 
-        return redirect(my_url)
+                self.send_confirm_mail(user[0].user_email, user_product[0].name, f"http://127.0.0.1:8000/auth={product_to_user.auth_token}")
+
+            return redirect(my_url)
 
     def get(self,request):
         user_form = UserForm(request.GET)
@@ -199,6 +199,15 @@ class IndexView(View):
     def auth_token(self):
         user_token = secrets.token_urlsafe(16)
         return user_token
+
+    def send_confirm_mail(self, user_email, product_name, product_url):
+        send_mail(
+            'Price Monitor - you started monitoring a new product',
+            f'Hey! \n You\'re now monitoring prices for {product_name.title()}.\n Here is your product\'s link: {product_url}.',
+            'fashionpricetracker@gmail.com',
+            [user_email],
+            fail_silently=False,)
+
 
 
 class ThanksView(View):
