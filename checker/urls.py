@@ -11,6 +11,6 @@ urlpatterns = [
     path('delete=<str:pk>', views.DeleteProductView.as_view(), name="confirm-delete"),
     path('delete-sucessful', views.DeleteSucessful.as_view(), name="delete-sucessful"),
     path('contact-us', views.ContactView.as_view(), name="contact-us"),
-
+    path('contact-us/sucess', views.ContactSucessView.as_view(), name="contact-sucess"),
 
 ]

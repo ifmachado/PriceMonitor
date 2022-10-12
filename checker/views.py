@@ -75,7 +75,7 @@ class IndexView(View):
 
                 send_mail(
                         'Price Monitor - you started monitoring a new product',
-                        f'Hey! \n You\'re now monitoring prices for {user_product[0].name.title()}.\n Here is your product\'s link: http://127.0.0.1:8000/auth={new_prod_user.auth_token}',
+                        f'Hey! \nYou\'re now monitoring prices for {user_product[0].name.title()}.\nHere is your product\'s link: http://127.0.0.1:8000/auth={new_prod_user.auth_token}',
                         'fashionpricetracker@gmail.com',
                         [user[0].user_email],
                         fail_silently=False,)
@@ -294,6 +294,23 @@ class DeleteProductView(DeleteView):
 class DeleteSucessful(TemplateView):
     template_name = "checker/delete_sucess.html"
 
-class ContactView(TemplateView):
-    template_name = "checker/contact.html"
+class ContactView(View):
+    def get(self,request):
+        return render(request, "checker/contact.html")
 
+    def post(self, request):
+        user_data = request.POST
+        user_name = user_data['name']
+        user_email = user_data['email']
+        message_subject= user_data['subject']
+        message_content = user_data['message']
+        send_mail(
+            'New user message',
+            f'Name:{user_name}\nEmail:{user_email}\nSubject:{message_subject}\nMessage:{message_content}', 
+            'fashionpricetracker@gmail.com',
+            ['fashionpricetracker@gmail.com'],
+            fail_silently=False,)
+        return redirect('contact-us/sucess')
+
+class ContactSucessView(TemplateView):
+    template_name = "checker/contact_sucess.html"

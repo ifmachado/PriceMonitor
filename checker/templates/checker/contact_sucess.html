@@ -1,0 +1,31 @@
+{% extends "base_product.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load widget_tweaks %}
+
+{% block page-title %}
+Fashion Price Checker
+{% endblock %}
+
+{% comment %} {% block css_files %} 
+<link rel="stylesheet" href="{%static "checker/page_style.css"%}">
+{% endblock %} {% endcomment %}
+
+
+{% block content %}
+<div class="content">
+    <div class="container">
+      <div class="row align-items-stretch justify-content-center no-gutters">
+        <div class="col-md-7">
+          <div class="form h-100 contact-wrap p-5">
+            <h3 class="text-center">Thank you for your message!</h3>
+            <p> We'll get back to you as soon as we can. </p>
+            <a href ="{% url 'starting-page' %}"
+              <button class="btn btn-primary btn-md">Return to homepage</button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
