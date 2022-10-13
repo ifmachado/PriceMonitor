@@ -23,9 +23,9 @@ class ProductToUser(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     linked_product = models.ForeignKey(Product, on_delete=models.CASCADE)
     desired_price = models.IntegerField()
-    auth_token = models.CharField(max_length=20, primary_key=True)
+    auth_token = models.CharField(max_length=30, primary_key=True)
     price_alt = models.CharField(max_length=5, default="False")
-
+    price_email_sent=models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user_id.user_email} - {self.linked_product.name}"
