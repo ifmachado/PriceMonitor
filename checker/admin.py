@@ -9,12 +9,8 @@ class PriceHistoryAdmin(admin.ModelAdmin):
     list_display = ("linked_product", "date", "price")
     list_filter = ("linked_product", "date")
 
-    class Meta:
-        verbose_name ="PriceHistory"
-        verbose_name_plural = "PriceHistory"
-
 class ProductToUserAdmin(admin.ModelAdmin):
-    fields = ("user_id", "linked_product", "desired_price", "auth_token", "price_alt", "price_email_sent")
+    fields = ("user_id", "linked_product", "desired_price", "auth_token", "price_alt", "price_email_sent    ")
     list_display = ("user_id", "linked_product")
     list_filter = ("user_id", "linked_product", "auth_token")
  

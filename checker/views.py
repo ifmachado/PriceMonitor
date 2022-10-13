@@ -3,7 +3,7 @@ from datetime import date
 from urllib.parse import urlencode
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from .forms import UserForm
+from .forms import ContactForm, UserForm
 from .models import Product, User, PriceHistory, ProductToUser
 from bs4 import BeautifulSoup
 import requests
@@ -296,17 +296,19 @@ class DeleteSucessful(TemplateView):
 
 class ContactView(View):
     def get(self,request):
-        return render(request, "checker/contact.html")
+        contact_form = ContactForm(request.GET)
+        return render(request, "checker/contact.html", {'form' : contact_form})
 
     def post(self, request):
         user_data = request.POST
-        user_name = user_data['name']
-        user_email = user_data['email']
+        user_name = user_data['user_name']
+        user_email = user_data['user_email']
         message_subject= user_data['subject']
         message_content = user_data['message']
+        message_date = user_data['message_date']
         send_mail(
             'New user message',
-            f'Name:{user_name}\nEmail:{user_email}\nSubject:{message_subject}\nMessage:{message_content}', 
+            f'Date: {message_date} \nName:{user_name}\nEmail:{user_email}\nSubject:{message_subject}\nMessage:{message_content}', 
             'fashionpricetracker@gmail.com',
             ['fashionpricetracker@gmail.com'],
             fail_silently=False,)

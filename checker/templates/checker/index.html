@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
 {% load widget_tweaks %}
 
 {% block page-title %}
@@ -42,11 +41,20 @@ Fashion Price Checker
 </div>                 
 <!-- Price Monitor Submission form-->
 <form method="POST" action="{% url "starting-page" %}" class="form-subscribe" id="contactForm">
-    {% csrf_token %}
-    <div class=“form-group row”>
-        {{ form|crispy }}
-        <button class="btn btn-primary btn-lg ">Submit</button>
-    </div>
+{% csrf_token %}
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
+    {% for field in form.visible_fields %}
+        <div class="form-group row">
+            {{ field|add_class:'form-control' }}
+            {% for error in field.errors %}
+                <span class="help-block">{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    <button class="btn btn-primary btn-lg ">Submit</button>
 </form>
 {% endblock %}
 {% block content %}

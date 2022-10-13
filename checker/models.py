@@ -37,6 +37,9 @@ class PriceHistory(models.Model):
 
     def __str__(self):
         return self.linked_product.name
+    
+    class Meta:
+        verbose_name_plural = "Price History"
 
 
 
