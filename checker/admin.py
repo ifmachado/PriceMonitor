@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import ProductToUser, User, Product, PriceHistory
 
-# Register your models here.
+# Setting up configs for readonly fields and displayed and filtered fields on admin panel.
 
 class PriceHistoryAdmin(admin.ModelAdmin):
     fields = ("linked_product", "price")
@@ -15,6 +15,7 @@ class ProductToUserAdmin(admin.ModelAdmin):
     list_filter = ("user_id", "linked_product", "auth_token")
  
 
+#register models and admin config classes to admin panel
 admin.site.register(User) 
 admin.site.register(Product) 
 admin.site.register(PriceHistory,PriceHistoryAdmin) 
