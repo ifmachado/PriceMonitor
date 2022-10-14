@@ -17,4 +17,4 @@ class ContactForm(forms.Form):
     user_name=forms.CharField(max_length=40, label='Your name')
     user_email = forms.EmailField(max_length=200, label='Your Email')
     subject = forms.CharField(max_length=500)
-    message = forms.TextInput()
+    message = forms.CharField(min_length=10)

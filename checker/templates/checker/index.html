@@ -49,12 +49,12 @@ Fashion Price Checker
     {% for field in form.visible_fields %}
         <div class="form-group row">
             {{ field|add_class:'form-control' }}
-            {% for error in field.errors %}
-                <span class="help-block">{{ error }}</span>
-            {% endfor %}
+            {% if field.errors %}
+                <span class="text-center text-danger mb-3">{{ error }}</span>
+            {% endif %}
         </div>
     {% endfor %}
-    <button class="btn btn-primary btn-lg ">Submit</button>
+    <button class="btn btn-primary btn-lg">Submit</button>
 </form>
 {% endblock %}
 {% block content %}

@@ -30,14 +30,14 @@ Fashion Price Checker
               <div class="form-group">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {{ field|add_class:'form-control' }}
-                {% for error in field.errors %}
-                  <span class="help-block">{{ error }}</span>
-                {% endfor %}
+                {% if field.errors %}
+                  <span class="text-center text-danger mb-3">{{ error }}</span>
+                {% endif %}
               </div>
             {% endfor %}
               <div class="row justify-content-center">
                 <div class="col-md-5 form-group text-center">
-                  <input type="submit" value="Send Message" class="btn btn-block btn-primary rounded-0 py-2 px-4">
+                  <input type="submit" value="Send Message" class="btn btn-primary btn-lg">
                   <span class="submitting"></span>
                 </div>
               </div>
