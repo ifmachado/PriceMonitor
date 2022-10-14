@@ -16,7 +16,7 @@ from django.views import View
 import pygal
 from django.views.generic.edit import DeleteView
 from django.core.mail import send_mail
-
+from .static.checker.graph_style import custom_style as graph_syle
 
 
 
@@ -247,8 +247,7 @@ class ProductDetailView(DetailView):
             product_id = entry.linked_product.id
 
    
-        # create a line chart with pygal's pre-built LightColorizedStyle style and 20degree x label rotation.
-        line_chart = pygal.Line(x_label_rotation=20)
+        line_chart = pygal.Line(x_label_rotation=20, style=graph_syle)
 
         # chart title
         today = date.today()
@@ -305,10 +304,9 @@ class ContactView(View):
         user_email = user_data['user_email']
         message_subject= user_data['subject']
         message_content = user_data['message']
-        message_date = user_data['message_date']
         send_mail(
             'New user message',
-            f'Date: {message_date} \nName:{user_name}\nEmail:{user_email}\nSubject:{message_subject}\nMessage:{message_content}', 
+            f'Name:{user_name}\nEmail:{user_email}\nSubject:{message_subject}\nMessage:{message_content}', 
             'fashionpricetracker@gmail.com',
             ['fashionpricetracker@gmail.com'],
             fail_silently=False,)
