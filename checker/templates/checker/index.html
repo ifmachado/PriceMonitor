@@ -6,7 +6,7 @@
 Fashion Price Checker
 {% endblock %}
 
-{% comment %} {% block css_files %} 
+{% comment %} {% block css_files %}
 <link rel="stylesheet" href="{%static "blog/post.css"%}">
 <link rel="stylesheet" href="{%static "blog/index.css"%}">
 {% endblock %} {% endcomment %}
@@ -15,30 +15,29 @@ Fashion Price Checker
 {% block header %}
 <h1 class="mb-5">We help you save money while completing your dream wardrobe!</h1>
 <h3 class="mb-5">We support the following brands:</h3>
-<div class="row">
-    <div class="col-lg-4">
+<div class="d-flex justify-content-between">
+    <div class="col-lg-4 d-flex align-items-center">
         <div class="brands-item mx-auto mb-5 mb-lg-0">
             <a target="_blank" href="http://www.byparra.com">
-                <img class="img-fluid mb-3" src="{% static "/checker/images/byparra-logo.png" %}" alt="ByParra" /> 
+                <img class="img-fluid mb-3" src="{% static "/checker/images/byparra-logo.png" %}" alt="ByParra" width="128" />
             </a>
         </div>
     </div>
-    <div class="col-lg-4">
+    <div class="col-lg-4 d-flex align-items-center">
         <div class="brands-item mx-auto mb-5 mb-lg-0">
             <a target="_blank" href="http://www.ganni.com">
-            <img class="img-fluid mb-3" src="{% static "/checker/images/ganni-logo-vector.svg" %}" alt="Ganni" />
-            </a> 
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="brands-item mx-auto mb-5 mb-lg-0">
-            <a target="_blank" href="http://thefrankieshop.com">
-            <img class="img-fluid mb-3" src="{% static "/checker/images/frankie-shop-logo.webp" %}" alt="The Frankie Shop" /> 
+            <img class="img-fluid mb-3" src="{% static "/checker/images/ganni-logo-vector.svg" %}" alt="Ganni" width="128" />
             </a>
         </div>
     </div>
-
-</div>                 
+    <div class="col-lg-4 d-flex align-items-center">
+        <div class="brands-item mx-auto mb-5 mb-lg-0 ">
+            <a target="_blank" href="http://thefrankieshop.com">
+            <img class="img-fluid mb-3" src="{% static "/checker/images/frankie-shop-logo.webp" %}" alt="The Frankie Shop" width="128" />
+            </a>
+        </div>
+    </div>
+</div>
 <!-- Price Monitor Submission form-->
 <form method="POST" action="{% url "starting-page" %}" class="form-subscribe" id="contactForm">
 {% csrf_token %}
@@ -46,15 +45,27 @@ Fashion Price Checker
         {{ hidden }}
     {% endfor %}
 
-    {% for field in form.visible_fields %}
-        <div class="form-group row">
-            {{ field|add_class:'form-control' }}
-            {% if field.errors %}
-                <span class="text-center text-danger mb-3">{{ error }}</span>
-            {% endif %}
+    <div class="form-group">
+        <div class="row d-md-flex justify-content-between mb-2">
+            <div class="col-md-12 col-sm-12">
+                <input type="url" name="product_url" placeholder="https://site.com/my-favourite-product/" maxlength="200" class="form-control" required="" id="id_product_url">
+            </div>
         </div>
-    {% endfor %}
-    <button class="btn btn-primary btn-lg">Submit</button>
+        <div class="row d-md-flex justify-content-between">
+            <div class="col-md-8 col-sm-12">
+                <input type="email" class="form-control mb-2" name="user_email"
+                    placeholder="email@example.com" maxlength="200" required id="id_user_email">
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">$</div>
+                    </div>
+                    <input type="number" class="form-control" name="desired_price" placeholder="9.99" required id="id_desired_price">
+                </div>
+            </div>
+        </div>
+    <button class="btn btn-primary btn-lg mt-2">Submit</button>
 </form>
 {% endblock %}
 {% block content %}

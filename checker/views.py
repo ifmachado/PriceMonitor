@@ -70,11 +70,11 @@ class IndexView(View):
                 new_prod_user.save()
 
                 #redirect to thank-you URL
-                base_url = reverse('submit-sucessful')  # 1 thank-you/
+                base_url = reverse('submit-successful')  # 1 thank-you/
                 query_string =  urlencode({'auth': new_prod_user.auth_token})  # 2 auth=bhejwbhr374637hfd
                 my_url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
 
-                # sends email to user confirming submition sucess.
+                # sends email to user confirming submition success.
                 send_mail(
                         'Price Monitor - you started monitoring a new product',
                         f'Hey! \nYou\'re now monitoring prices for {user_product[0].name.title()}.\nHere is your product\'s link: http://127.0.0.1:8000/auth={new_prod_user.auth_token}',
@@ -218,11 +218,11 @@ class IndexView(View):
         user_token = secrets.token_urlsafe(16)
         return user_token
 
-# Renders submit_sucess HTML, gets auth token passed through URL and passed that as context to HTML.
+# Renders submit_success HTML, gets auth token passed through URL and passed that as context to HTML.
 class ThanksView(View):
     def get(self, request):
         product_auth = request.GET.get('auth')
-        return render(request, "checker/submit_sucess.html", {'product_auth' : product_auth})
+        return render(request, "checker/submit_success.html", {'product_auth' : product_auth})
 
 
 class RepeatedSubmission(View):
@@ -240,12 +240,12 @@ class RepeatedSubmission(View):
 
     # when POST request is received from form (meaning user submitted a new price),
     # it replaces the object's desired_price attribute value with the new price submitted.
-    # also renderes the submit_change_sucessful.html with the ProducttoUSer object as context.
+    # also renderes the submit_change_successful.html with the ProducttoUSer object as context.
     def post(self,request):
         object = self.get_object()
         object.desired_price = self.request.GET.get('new-price')
         object.save()
-        return render(request, "checker/submit_change_sucessful.html", {'product' : object})
+        return render(request, "checker/submit_change_successful.html", {'product' : object})
 
 #View for product page, it extends Django's generic DetailView as it's ideal to displaying info related to a single object from a Model.
 class ProductDetailView(DetailView):
@@ -326,21 +326,21 @@ class ProductDetailView(DetailView):
         return last_item
 
 # Renders delete-confirm html, deletes the specific instance of Product to User model (object is identified through pk passed through URL to this view)
-# and redirects to sucess url
+# and redirects to success url
 # Product title is passed as context to delete-confirm html.
 class DeleteProductView(DeleteView):
     model = ProductToUser
     template_name = "checker/delete_confirm.html"
-    success_url = reverse_lazy("delete-sucessful")
+    success_url = reverse_lazy("delete-successful")
 
     def get_context_data(self,**kwargs):
         context=super().get_context_data(**kwargs)
         context['title'] = self.object.linked_product.name.title()
         return context
 
-# Delete sucess page only requires a html to be rendered.
-class DeleteSucessful(TemplateView):
-    template_name = "checker/delete_sucess.html"
+# Delete success page only requires a html to be rendered.
+class DeleteSuccessful(TemplateView):
+    template_name = "checker/delete_success.html"
 
 class ContactView(View):
     # when page receives a GET request, it renders the class based contact form and the contact hmtl, passing the form as context.
@@ -362,8 +362,8 @@ class ContactView(View):
             'fashionpricetracker@gmail.com',
             ['fashionpricetracker@gmail.com'],
             fail_silently=False,)
-        return redirect('contact-us/sucess')
+        return redirect('contact-us/success')
 
-# Contact sucess page only requires a html to be rendered.
-class ContactSucessView(TemplateView):
-    template_name = "checker/contact_sucess.html"
+# Contact success page only requires a html to be rendered.
+class ContactSuccessView(TemplateView):
+    template_name = "checker/contact_success.html"
