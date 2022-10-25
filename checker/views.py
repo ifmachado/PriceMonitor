@@ -27,15 +27,16 @@ brand_specs = {'Frankie_Shop':
                 {'price': ("strong", {"class": "prd-DetailPrice_Price"}),
                  'image': ("div", {"class": "prd-Detail_Image"})
                 },
-            'ByParra':
-                 {'price': ("h2", {"class": "price"}),
-                 'image' : ("div", {"class": "gallery_images"})
-                 },
             'Ganni':
                  {'price_sale': ("span", {"class": "product-price__sales"}),
                  'price_regular': ("span", {"class": "product-price__normal"}),
                  'image' : ("div", {"class": "b-product-images__large"}),
-                 }
+                 },
+            'Reformation':
+                {
+                    'price': ("span", {"class": "price--reduced"}),
+                    'image': ("div", {"class": "pdp__images-main-container"})
+                }
             }
 
 
@@ -126,6 +127,9 @@ class IndexView(View):
         elif "byparra" in product_url:
             brand = "ByParra"
 
+        elif "thereformation" in product_url:
+            brand = "Reformation"
+
         # get product's name by finding the first H1 HTML tag in soup objects.
         name = soup.find_all("h1")[0].text
 
@@ -143,8 +147,12 @@ class IndexView(View):
         #from the list of divs, get only the img tags.
         images = div_tag[0].find('img')
 
-        #from the img tag, get only the src attribute.
-        img_src = images['src']
+        if brand == 'Reformation':
+            #src attribute for Reformation brand is declared as data-src instead of src in HTML.
+            img_src = images['data-src']
+        else:
+            #from the img tag, get only the src attribute.
+            img_src = images['src']
 
         #configure source path in proper http:// or https:// format.
         img_src_link = "http://"
@@ -205,11 +213,6 @@ class IndexView(View):
 
             #casting price value as and int and removing any extra characters
             int_price = int(''.join(v for v in price if v.isdigit()))
-
-            #ByParra prices are returned with 2 zeros after decimal point and should be removed.
-            if brand == "ByParra":
-                corrected_price = str(int_price)[:-2]
-                int_price = corrected_price
 
             return int_price
 
