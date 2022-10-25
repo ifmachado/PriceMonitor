@@ -1,8 +1,11 @@
+import base64
 from collections import OrderedDict
 from datetime import date
+import io
 from urllib.parse import urlencode
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
+import urllib3
 from .forms import ContactForm, UserForm
 from .models import Product, User, PriceHistory, ProductToUser
 from bs4 import BeautifulSoup
@@ -17,6 +20,12 @@ import pygal
 from django.views.generic.edit import DeleteView
 from django.core.mail import send_mail
 from .static.checker.graph_style import custom_style as graph_syle
+from bokeh.plotting import figure
+from bokeh.embed import components
+
+
+
+
 
 
 
@@ -260,7 +269,8 @@ class ProductDetailView(DetailView):
      context = super().get_context_data(**kwargs)
      product_id = self.object.linked_product.id
      price_history = PriceHistory.objects.filter(linked_product__id=product_id)
-     context["product_auth"] = self.object.auth_token
+     product_auth = self.object.auth_token
+     context["product_auth"] = product_auth
      context["product"] = self.object.linked_product
      context["title"] = self.object.linked_product.name.title()
      context["current_price"], context["graph"] = self.last_price_and_graph(price_history)
@@ -322,6 +332,62 @@ class ProductDetailView(DetailView):
         last_date, last_price = self.last(price_to_date)
 
         return last_price, chart_path
+
+    def generate_graph(self, product_auth, price_history):
+        price_to_date = OrderedDict()
+        
+        #loop through all the PriceHistory objects in the price_history list.
+        for entry in price_history:
+
+            # get object's date attribute and format it
+            entry_date = entry.date.strftime('%d-%m-%Y')
+
+            # get object's price attribute
+            entry_price = entry.price
+
+            #add date and price to OrderedDict
+            price_to_date[entry_date] = entry_price
+
+        
+        #get desired price 
+        product = ProductToUser.objects.filter(auth_token=product_auth)
+        desired_price = product[0].desired_price
+
+        # chart title
+        today = date.today()
+        today_formatted = today.strftime("%d/%m/%Y")
+
+        date_list = []
+        price_list = []
+        desired_price_list= []
+    
+        # loop through price_to_date key,value pairs to add each date to date_list and price to price_list
+        for key, value in price_to_date.items():
+            if key not in date_list:
+                date_list.append(key)
+                price_list.append(value)
+
+        for i in range(len(date_list)):
+            desired_price_list.append(desired_price)
+
+        # prepare some data
+        x = [1, 2, 3, 4, 5]
+        y1 = [6, 7, 2, 4, 5]
+        y2 = [2, 3, 4, 5, 6]
+
+        # create a new plot with a title and axis labels
+        p = figure(title="Multiple line example", x_axis_label='x', y_axis_label='y')
+
+        # add multiple renderers
+        p.line(x, y1, legend_label="Temp.", color="blue", line_width=2)
+        p.line(x, y2, legend_label="Rate", color="red", line_width=2)
+
+        script, div = components(p)
+
+        #get most recent price from OrderedDict with all prices.
+        last_date, last_price = self.last(price_to_date)
+
+        return last_price, script, div
     
     # gets ordered dict and returns its last item.
     def last(self, ord_dict):
