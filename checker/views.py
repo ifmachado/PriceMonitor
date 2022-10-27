@@ -1,12 +1,13 @@
 import base64
 from collections import OrderedDict
-from datetime import date
+from datetime import date, datetime
 import io
 from urllib.parse import urlencode
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 import urllib3
-from .forms import ContactForm, UserForm
+from .forms import ContactForm, ProductUpdateForm, UserForm
 from .models import Product, User, PriceHistory, ProductToUser
 from bs4 import BeautifulSoup
 import requests
@@ -17,13 +18,11 @@ from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
 from django.views import View
 import pygal
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, FormMixin
 from django.core.mail import send_mail
-from .static.checker.graph_style import custom_style as graph_syle
-from bokeh.plotting import figure
 from bokeh.embed import components
-
-
+from bokeh.models import Range1d, DatetimeTickFormatter, NumeralTickFormatter
+from bokeh.plotting import figure
 
 
 
@@ -260,31 +259,37 @@ class RepeatedSubmission(View):
         return render(request, "checker/submit_change_successful.html", {'product' : object})
 
 #View for product page, it extends Django's generic DetailView as it's ideal to displaying info related to a single object from a Model.
-class ProductDetailView(DetailView):
+class ProductDetailView(FormMixin, DetailView):
     template_name = "checker/product_page.html"
     model = ProductToUser
+    form_class = ProductUpdateForm
+
+    def get_success_url(self):
+        return reverse('product-page', kwargs={'pk': self.object.pk})
 
     #adding auth_token, product object, title, price and graph to context to be passed to HTML
     def get_context_data(self, **kwargs):
-     context = super().get_context_data(**kwargs)
+     context = super(ProductDetailView, self).get_context_data(**kwargs)
      product_id = self.object.linked_product.id
      price_history = PriceHistory.objects.filter(linked_product__id=product_id)
      product_auth = self.object.auth_token
+     context["form"] = self.get_form()
      context["product_auth"] = product_auth
      context["product"] = self.object.linked_product
      context["title"] = self.object.linked_product.name.title()
-     context["current_price"], context["graph"] = self.last_price_and_graph(price_history)
+     context["current_price"] = self.get_current_price(self.get_price_to_date(price_history))
+     context["script"], context["div"] = self.generate_graph(price_history, context["current_price"], self.object.desired_price)
      return context
 
     #gets last price in DB for specific product and generates a price history graph
-    def last_price_and_graph(self, price_history):
+    def get_price_to_date(self, price_history):
         price_to_date = OrderedDict()
         
         #loop through all the PriceHistory objects in the price_history list.
         for entry in price_history:
 
-            # get object's date attribute and format it
-            entry_date = entry.date.strftime('%d-%m-%Y')
+            # get object's date attribute 
+            entry_date = entry.date
 
             # get object's price attribute
             entry_price = entry.price
@@ -292,107 +297,89 @@ class ProductDetailView(DetailView):
             #add date and price to OrderedDict
             price_to_date[entry_date] = entry_price
 
-            product_id = entry.linked_product.id
+        return price_to_date
 
-        #create a line chart with pygal using custom style.
-        line_chart = pygal.Line(x_label_rotation=20, style=graph_syle)
-
-        # chart title
-        today = date.today()
-        today_formatted = today.strftime("%d/%m/%Y")
-        line_chart.title = today_formatted
-
+    def sort_dict_to_lists(self, price_history):
         date_list = []
         price_list = []
     
         # loop through price_to_date key,value pairs to add each date to date_list and price to price_list
-        for key, value in price_to_date.items():
+        for key, value in price_history.items():
             if key not in date_list:
+                print(type(key))
                 date_list.append(key)
                 price_list.append(value)
 
-        #x labels for chart are dates
-        line_chart.x_labels = date_list   
+        return date_list, price_list
 
-        #y values are the prices
-        line_chart.add("Price", price_list)
+    def generate_graph(self, price_history, current_price, desired_price):
 
-        #config name for chart to be saved as an svg file
-        chart_name = str(product_id) + ".svg"
+        price_to_date = self.get_price_to_date(price_history)
+        date_list, price_list = self.sort_dict_to_lists(price_to_date)
 
-         #config paath for chart to be saved
-        chart_path = os.path.join("checker/static/checker/images/price_charts/", chart_name)
-
-        #render line chart to path defined above
-        line_chart.render_to_file(chart_path)
-
-        chart_path= "checker/images/price_charts/" + chart_name
-
-        #get most recent price from OrderedDict with all prices.
-        last_date, last_price = self.last(price_to_date)
-
-        return last_price, chart_path
-
-    def generate_graph(self, product_auth, price_history):
-        price_to_date = OrderedDict()
-        
-        #loop through all the PriceHistory objects in the price_history list.
-        for entry in price_history:
-
-            # get object's date attribute and format it
-            entry_date = entry.date.strftime('%d-%m-%Y')
-
-            # get object's price attribute
-            entry_price = entry.price
-
-            #add date and price to OrderedDict
-            price_to_date[entry_date] = entry_price
-
-        
-        #get desired price 
-        product = ProductToUser.objects.filter(auth_token=product_auth)
-        desired_price = product[0].desired_price
-
-        # chart title
-        today = date.today()
-        today_formatted = today.strftime("%d/%m/%Y")
-
-        date_list = []
-        price_list = []
-        desired_price_list= []
-    
-        # loop through price_to_date key,value pairs to add each date to date_list and price to price_list
-        for key, value in price_to_date.items():
-            if key not in date_list:
-                date_list.append(key)
-                price_list.append(value)
-
-        for i in range(len(date_list)):
-            desired_price_list.append(desired_price)
-
-        # prepare some data
-        x = [1, 2, 3, 4, 5]
-        y1 = [6, 7, 2, 4, 5]
-        y2 = [2, 3, 4, 5, 6]
 
         # create a new plot with a title and axis labels
-        p = figure(title="Multiple line example", x_axis_label='x', y_axis_label='y')
+        p = figure(title="Price History", x_axis_type="datetime", width=500, height=450)
 
-        # add multiple renderers
-        p.line(x, y1, legend_label="Temp.", color="blue", line_width=2)
-        p.line(x, y2, legend_label="Rate", color="red", line_width=2)
 
+        # add multiple renderers - one line and one circle
+        if len(date_list) > 1:
+            p.line(date_list, price_list, legend_label="History", color="#0d6efd", line_width=2)
+        else:
+            p.circle(date_list[0], price_list[0], legend_label="History", color="#0d6efd", size=20)
+
+
+        p.circle(date_list[-1], desired_price, legend_label="Target Price", size=20, color="#f695d9")
+
+        #set numbers range on y axis (prices)
+        p.y_range = Range1d(1, (current_price + 100))
+
+        #format y and x axis
+        p.yaxis[0].formatter = NumeralTickFormatter(format="€0,0")
+        p.xaxis[0].formatter = DatetimeTickFormatter(years="%d/%m/%Y",
+                                          months="%d/%m/%Y",
+                                          days="%d/%m/%Y",
+                                          hours="%d/%m/%Y",
+                                          hourmin="%d/%m/%Y",
+                                          minutes="%d/%m/%Y",
+                                          minsec="%d/%m/%Y",
+                                          seconds="%d/%m/%Y",
+                                          milliseconds="%d/%m/%Y",
+                                          microseconds="%d/%m/%Y")
+
+
+        #get script and div boken components so they can be embedded on html
         script, div = components(p)
 
-        #get most recent price from OrderedDict with all prices.
-        last_date, last_price = self.last(price_to_date)
+        return script, div
 
-        return last_price, script, div
-    
-    # gets ordered dict and returns its last item.
-    def last(self, ord_dict):
-        last_item = next(reversed(ord_dict.items()))
-        return last_item
+    def get_current_price(self, price_history):
+        last_date, last_price = next(reversed(price_history.items()))
+        return last_price
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            new_desired_price = int(request.POST["new_price"])
+            self.object.desired_price = new_desired_price
+            product_id = self.object.linked_product.id
+            self.object.save()
+            context = self.get_context_data(**kwargs)
+            price_history = PriceHistory.objects.filter(linked_product__id=product_id)
+            current_price = self.get_current_price(self.get_price_to_date(price_history))
+            context['script'], context ['div'] =  self.generate_graph(price_history, current_price, new_desired_price)
+            return render(request, "checker/product_page.html", context)
+
+        else:
+            return self.form_invalid(form)
+            
+    def form_valid(self, form):
+        # Here, we would record the user's interest using the message
+        # passed in form.cleaned_data['message']
+        return super(ProductDetailView, self).form_valid(form)
 
 # Renders delete-confirm html, deletes the specific instance of Product to User model (object is identified through pk passed through URL to this view)
 # and redirects to success url

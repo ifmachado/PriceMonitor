@@ -7,17 +7,17 @@
 Fashion Price Checker
 {% endblock %}
 
-{% comment %} {% block css_files %} 
+{% comment %} {% block css_files %}
 <link rel="stylesheet" href="{%static "checker/page_style.css"%}">
 {% endblock %} {% endcomment %}
 
 
 {% block content %}
-<div class="content">
+<div class="content" style="background: url({% static "checker/images/background_contact.jpg" %})  no-repeat center center fixed; background-size: cover;">
   <div class="container">
     <div class="row align-items-stretch justify-content-center no-gutters">
       <div class="col-md-7">
-        <div class="form h-100 contact-wrap p-5">
+        <div class="form contact-wrap p-5 h-100">
           <h3 class="text-center">Let's Talk</h3>
           <form method="POST" action="{% url "contact-us" %}" class="mb-5"  id="contactForm" name="contactForm">
             {% csrf_token %}
@@ -25,7 +25,7 @@ Fashion Price Checker
             {% for hidden in form.hidden_fields %}
               {{ hidden }}
             {% endfor %}
-        
+
             {% for field in form.visible_fields %}
               <div class="form-group">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -35,7 +35,7 @@ Fashion Price Checker
                 {% endif %}
               </div>
             {% endfor %}
-              <div class="row justify-content-center">
+              <div class="row justify-content-center mt-2">
                 <div class="col-md-5 form-group text-center">
                   <input type="submit" value="Send Message" class="btn btn-primary btn-lg">
                   <span class="submitting"></span>

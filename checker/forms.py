@@ -17,3 +17,6 @@ class ContactForm(forms.Form):
     user_email = forms.EmailField(max_length=200, label='Your Email')
     subject = forms.CharField(max_length=500)
     message = forms.CharField(min_length=10)
+
+class ProductUpdateForm(forms.Form):
+    new_price = forms.IntegerField(widget= forms.NumberInput(attrs={'placeholder':'Desired Price'}))

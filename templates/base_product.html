@@ -15,19 +15,21 @@
         <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link rel="stylesheet" href="{% static "app.css" %}">
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static "custom.css" %}">
         {% block css_files %} {% endblock %}
 	</head>
 	<body>
-        <a name="top"></a>  
-        <nav class="navbar navbar-light bg-light static-top">
+        <a name="top"></a>
+        <nav class="navbar navbar-light bg-light navbar-fixed-top">
             <div class="container">
                 <a class="navbar-brand" href="/">Fashion Price Tracker</a>
                 <a class="btn btn-primary" href="{% url "contact-us"%}">Contact</a>
             </div>
         </nav>
         {% block content %}{% endblock %}
-	
-<footer>
+
+<footer class="fixed-bottom bg-white p-4 shadow p-3">
     <div class="container">
         <div class="row">
             <div class="col-lg-6 h-100 text-center text-lg-start my-auto">

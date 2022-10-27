@@ -61,7 +61,7 @@ Fashion Price Checker
                     <div class="input-group-prepend">
                         <div class="input-group-text">€</div>
                     </div>
-                    <input type="number" class="form-control" name="desired_price" placeholder="9.99" required id="id_desired_price">
+                    <input type="number" class="form-control" name="desired_price" placeholder="9.99" required id="id_desired_price" data-bs-toggle="tooltip" data-bs-trigger="click" data-bs-placement="bottom" title="Tooltip on bottom">
                 </div>
             </div>
         </div>
@@ -72,4 +72,10 @@ Fashion Price Checker
 <section class="showcase">
     {% include "./includes/how_to.html"%}
 </section>
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
 {% endblock %}

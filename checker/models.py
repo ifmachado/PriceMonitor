@@ -40,7 +40,7 @@ class ProductToUser(models.Model):
 #There will be multiple entries per product.
 class PriceHistory(models.Model):
     linked_product = models.ForeignKey(Product, related_name="current_product", on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateField(auto_now=True)
     price = models.IntegerField(null=True)
 
     def __str__(self):

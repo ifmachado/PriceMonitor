@@ -15,36 +15,38 @@
         <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link rel="stylesheet" href="{% static "app.css" %}">
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static "custom.css" %}">
         {% block css_files %} {% endblock %}
 	</head>
 	<body>
-        <a name="top"></a>  
+        <a name="top"></a>
         <nav class="navbar navbar-light bg-light static-top">
             <div class="container">
                 <a class="navbar-brand" href="/">Fashion Price Tracker</a>
                 <a class="btn btn-primary" href="{% url "contact-us"%}">Contact</a>
             </div>
         </nav>
-        <header class="masthead">
+        <header class="masthead" style="background-image: url({% static "checker/images/background_home.jpg" %}); background-size: cover; background-position: center;">
             <div class="container position-relative">
                 <div class="row justify-content-center">
                     <div class="col-xl-6">
                         <div class="text-center text-white">
                             {% block header %}{% endblock %}
-                        </div>  
+                        </div>
                     </div>
                 </div>
             </div>
         </header>
         {% block content %}{% endblock %}
-        <footer>
+        <footer class="shadow p-3 bg-body">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-6 h-100 text-center text-lg-start my-auto">
                         <ul class="list-inline mb-2">
                             <li class="list-inline-item"><a href="{% url "contact-us"%}">Contact</a></li>
                             <li class="list-inline-item"><a href="#top">Back to Top</a></li>
-            
+
                         </ul>
                         <p class="text-muted small mb-4 mb-lg-0">&copy; Fashion Price Tracker 2022. All Rights Reserved.</p>
                     </div>
@@ -65,5 +67,4 @@
             </div>
         </footer>
     </body>
-    {% block scripts %} {%endblock%}
 </html>

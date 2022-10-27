@@ -11,7 +11,7 @@ urlpatterns = [
     #dinamically constructed urls, where data passed through URL will be a string and a primary key for ProductToUser model.
     path('auth=<str:pk>', views.ProductDetailView.as_view(), name="product-page"), 
     path('delete=<str:pk>', views.DeleteProductView.as_view(), name="confirm-delete"),
-
+    
     path('delete-successful', views.DeleteSuccessful.as_view(), name="delete-successful"),
     path('contact-us', views.ContactView.as_view(), name="contact-us"),
     path('contact-us/success', views.ContactSuccessView.as_view(), name="contact-success"),
