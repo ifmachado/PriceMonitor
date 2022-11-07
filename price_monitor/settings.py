@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'checker',
     'widget_tweaks',
     'crispy_forms',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +150,10 @@ EMAIL_PORT = env('SMTP_PORT')
 EMAIL_HOST_USER = env('SMTP_HOST_USER')
 EMAIL_HOST_PASSWORD = env('SMTP_HOST_PASSWORD')
 EMAIL_USE_TLS = True
+
+#script automation - update_prices and targetprice_reached commands will run once a day at 09am.
+CRONJOBS = [
+    ('0 12 * * *', 'django.core.management.call_command', ['update_prices']),
+    ('0 12 * * *', 'django.core.management.call_command', ['targetprice_reached']),
+
+]

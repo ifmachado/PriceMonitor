@@ -23,6 +23,7 @@ from django.core.mail import send_mail
 from bokeh.embed import components
 from bokeh.models import Range1d, DatetimeTickFormatter, NumeralTickFormatter
 from bokeh.plotting import figure
+import pandas as pd
 
 
 
@@ -306,7 +307,6 @@ class ProductDetailView(FormMixin, DetailView):
         # loop through price_to_date key,value pairs to add each date to date_list and price to price_list
         for key, value in price_history.items():
             if key not in date_list:
-                print(type(key))
                 date_list.append(key)
                 price_list.append(value)
 
@@ -316,6 +316,13 @@ class ProductDetailView(FormMixin, DetailView):
 
         price_to_date = self.get_price_to_date(price_history)
         date_list, price_list = self.sort_dict_to_lists(price_to_date)
+        print(date_list)
+
+        formatted_dates = []
+
+        #format datetime objects in list
+        for date in date_list:
+            formatted_dates.append(pd.to_datetime(date))
 
 
         # create a new plot with a title and axis labels
@@ -324,7 +331,7 @@ class ProductDetailView(FormMixin, DetailView):
 
         # add multiple renderers - one line and one circle
         if len(date_list) > 1:
-            p.line(date_list, price_list, legend_label="History", color="#0d6efd", line_width=2)
+            p.line(formatted_dates, price_list, legend_label="History", color="#0d6efd", line_width=2)
         else:
             p.circle(date_list[0], price_list[0], legend_label="History", color="#0d6efd", size=20)
 
@@ -365,6 +372,7 @@ class ProductDetailView(FormMixin, DetailView):
         if form.is_valid():
             new_desired_price = int(request.POST["new_price"])
             self.object.desired_price = new_desired_price
+            self.object.price_email_sent = False
             product_id = self.object.linked_product.id
             self.object.save()
             context = self.get_context_data(**kwargs)
