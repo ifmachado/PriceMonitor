@@ -7,3 +7,5 @@ __pycache__
 #Dinamically created graphs and product images
 checker/static/checker/images/price_charts
 checker/static/checker/images/product_images
+
+db.sqlite3
