@@ -333,7 +333,7 @@ class ProductDetailView(FormMixin, DetailView):
         if len(date_list) > 1:
             p.line(formatted_dates, price_list, legend_label="History", color="#0d6efd", line_width=2)
         else:
-            p.circle(date_list[0], price_list[0], legend_label="History", color="#0d6efd", size=20)
+            p.circle(formatted_dates[0], price_list[0], legend_label="History", color="#0d6efd", size=20)
 
 
         p.circle(date_list[-1], desired_price, legend_label="Target Price", size=20, color="#f695d9")

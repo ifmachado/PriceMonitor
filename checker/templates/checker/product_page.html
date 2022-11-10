@@ -20,12 +20,15 @@ Fashion Price Checker
             <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="{%static product.img %}" alt="..." /></div>
                 <div class="col-md-6">
                     <h1 class="display-5 fw-bolder"> {{ title }}</h1>
-                    <div class="fs-5 mb-3">
+                    <div class="fs-5 mb-4">
                         <span>Current price: €{{ current_price }}</span>
+                    </div>
+                    <div class="mb-5">
+                    {{div|safe}}   
                     </div>
                     <div class="d-flex flex-column">
                         <h6>Change Target Price:</h6>
-                        <div class="input-group mb-2">
+                        <div class="input-group mb-5">
                             <div class="input-group-prepend">
                             
                             <form method="POST">
@@ -34,7 +37,7 @@ Fashion Price Checker
                                 {{ field }}
                             {% endfor %}
                     
-                            <div class="input-group mb-2">
+                            <div class="input-group mb-1">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">€</div>
                                 </div>
@@ -43,13 +46,12 @@ Fashion Price Checker
                             </div>
                             </form>
                             <p style="font-size:14px;font-style:italic;"> Recommended Target Price range: €{{current_price|discount:60}} to {{current_price|discount:20}}</p>
+                            <div class="mt-5">
+                                <a href ="{% url "confirm-delete" product_auth%}"
+                                    <button class="btn btn-primary btn-md">Stop monitoring</button>
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                    {{div|safe}}   
-                    <div class="mt-4">
-                        <a href ="{% url "confirm-delete" product_auth%}"
-                            <button class="btn btn-primary btn-sm">Stop monitoring</button>
-                        </a>
                     </div>
                 </div>
             </div>

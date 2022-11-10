@@ -18,7 +18,7 @@ Fashion Price Checker
     <div class="row align-items-stretch justify-content-center no-gutters">
       <div class="col-md-7">
         <div class="form contact-wrap p-5 h-100">
-          <h3 class="text-center">Let's Talk</h3>
+          <h3 class="text-center mb-3">Let's Talk</h3>
           <form method="POST" action="{% url "contact-us" %}" class="mb-5"  id="contactForm" name="contactForm">
             {% csrf_token %}
 
@@ -28,11 +28,13 @@ Fashion Price Checker
 
             {% for field in form.visible_fields %}
               <div class="form-group">
+                <div class="mb-3">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {{ field|add_class:'form-control' }}
                 {% if field.errors %}
                   <span class="text-center text-danger mb-3">{{ error }}</span>
                 {% endif %}
+                </div>
               </div>
             {% endfor %}
               <div class="row justify-content-center mt-2">
