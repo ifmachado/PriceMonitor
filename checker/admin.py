@@ -5,9 +5,9 @@ from .models import ProductToUser, User, Product, PriceHistory
 
 class PriceHistoryAdmin(admin.ModelAdmin):
     fields = ("linked_product", "price")
-    readonly_fields = ("date",)
-    list_display = ("linked_product", "date", "price")
-    list_filter = ("linked_product", "date")
+    readonly_fields = ("price_date",)
+    list_display = ("linked_product", "price_date", "price")
+    list_filter = ("linked_product", "price_date")
 
 class ProductToUserAdmin(admin.ModelAdmin):
     fields = ("user_id", "linked_product", "desired_price", "auth_token", "price_alt", "price_email_sent")

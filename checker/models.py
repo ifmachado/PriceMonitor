@@ -4,7 +4,7 @@ from django.db import models
 
 #This model is used to store product information on DB.
 class Product(models.Model):
-    product_url = models.URLField(max_length=200)
+    product_url = models.URLField(max_length=20, unique=True)
     brand = models.CharField(max_length=15)
     name = models.CharField(max_length=50)
     img_out_src = models.URLField(max_length=200)
@@ -40,7 +40,7 @@ class ProductToUser(models.Model):
 #There will be multiple entries per product.
 class PriceHistory(models.Model):
     linked_product = models.ForeignKey(Product, related_name="current_product", on_delete=models.CASCADE)
-    date = models.DateField(auto_now=True)
+    price_date = models.DateField(auto_now=True)
     price = models.IntegerField(null=True)
 
     def __str__(self):

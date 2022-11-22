@@ -290,7 +290,7 @@ class ProductDetailView(FormMixin, DetailView):
         for entry in price_history:
 
             # get object's date attribute 
-            entry_date = entry.date
+            entry_date = entry.price_date
 
             # get object's price attribute
             entry_price = entry.price
