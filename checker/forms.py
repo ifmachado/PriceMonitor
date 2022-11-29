@@ -18,5 +18,6 @@ class ContactForm(forms.Form):
     subject = forms.CharField(max_length=500)
     message = forms.CharField(min_length=10)
 
+# class based form for product page - sed to update targer price
 class ProductUpdateForm(forms.Form):
     new_price = forms.IntegerField(widget= forms.NumberInput(attrs={'placeholder':'Desired Price'}))

@@ -1,15 +1,12 @@
+{% comment %}  this html extends base.html and will insert code sections particular to this page into
+ the template blocks that were predetermined on "base" {% endcomment %}
+
 {% extends "base_product.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
-{% load widget_tweaks %}
 
 {% block page-title %}
 Fashion Price Checker
 {% endblock %}
-
-{% comment %} {% block css_files %} 
-<link rel="stylesheet" href="{%static "checker/page_style.css"%}">
-{% endblock %} {% endcomment %}
 
 
 {% block content %}
@@ -20,6 +17,7 @@ Fashion Price Checker
           <div class="form h-100 contact-wrap p-5">
             <h3 class="text-center">Thank you for your message!</h3>
             <p> We'll get back to you as soon as we can. </p>
+            {% comment %}  absolute path reference to home {% endcomment %}
             <a href ="{% url 'starting-page' %}"
               <button class="btn btn-primary btn-md">Return to homepage</button>
             </a>

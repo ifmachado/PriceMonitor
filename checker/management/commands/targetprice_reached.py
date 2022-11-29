@@ -3,10 +3,12 @@ from checker.models import PriceHistory, ProductToUser
 from django.core.mail import send_mail
 
 
-
+# creates a command that can be run from django project and crontab
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'Send email to user when target price is reached'
 
+    # function will retrieve the current price from db, compare against the value user set as target price
+    # if price has been reached, sends email to user email stored in db
     def handle(self, *args, **kwargs):  
         products_to_users = ProductToUser.objects.all()
         for entry in products_to_users:

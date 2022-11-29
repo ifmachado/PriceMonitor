@@ -2,9 +2,11 @@ from django.core.management.base import BaseCommand, CommandError
 from checker.models import PriceHistory, Product
 from checker.views import IndexView
 
+# creates a command that can be run from django project and crontab
+
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
-
+    # this function will scrape price from product url and store current value as a new entry in db
     def handle(self, *args, **kwargs):  
         all_products = Product.objects.all()
         for entry in all_products:

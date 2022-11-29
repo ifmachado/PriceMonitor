@@ -20,5 +20,6 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # makes django project to recognize url configs from app "checker"
     path('', include('checker.urls'))
 ]

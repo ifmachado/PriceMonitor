@@ -1,3 +1,4 @@
+  {% comment %} as this is a code snippet used by multiple templates, it was added to the includes folder so it can be reused by other templates {% endcomment %}
   {% load static %}
     <div class="container-fluid p-0">
         <div class="row g-0">
@@ -8,6 +9,7 @@
             </div>
         </div>
         <div class="row g-0">
+            {% comment %}  absolute path reference to  image in static files folder {% endcomment %}
             <div class="col-lg-6 text-white showcase-img" style="background-image: url('{% static "checker/images/notifications.jpg" %}')"></div>
             <div class="col-lg-6 my-auto showcase-text">
                 <h2>Set up notifications</h2>
@@ -15,6 +17,7 @@
             </div>
         </div>
         <div class="row g-0">
+            {% comment %}  absolute path reference to  image in static files folder {% endcomment %}
             <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background-image: url('{% static "checker/images/graph.jpg" %}')"></div>
             <div class="col-lg-6 order-lg-1 my-auto showcase-text">
                 <h2>Check Price History</h2>

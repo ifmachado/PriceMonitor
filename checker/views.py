@@ -50,17 +50,24 @@ brand_specs = {'Frankie_Shop':
 
 
 class IndexView(View):
+    # func will be called when post request is received
     def post(self,request):
+        # instanciate the user form and retrieve contents from post request
         user_form = UserForm(request.POST)
         my_url = ""
 
+        # validate form
         if user_form.is_valid():
+            # clean data received from post request
             user_data = user_form.cleaned_data
+
+            # scrape url provided by user to fetch name, brand, and image
             user_url = user_data['product_url']
             soup = self.scrape_from_url(user_url)
             product_name,product_brand = self.fetch_name_brand(user_url, soup)
             out_src, new_img = self.fetch_image(product_brand, soup)
             
+            # get or create object from Product db with scrapped values for name, brand and img
             user_product=Product.objects.get_or_create(
                 product_url=user_url, 
                 name=product_name, 
@@ -68,13 +75,18 @@ class IndexView(View):
                 img_out_src=out_src, 
                 img=new_img)
 
+            # get or create object from User db with post request value for email
             user = User.objects.get_or_create(user_email=user_data['user_email'])
 
+            # fetch current price and save as a new entry on PriceHistory db
             first_price = self.fetch_price(user_product[0], soup)
             product_price = PriceHistory(linked_product=user_product[0], price=first_price)
             product_price.save()
 
+            # fecth product to user entry from db based on user and linked_product
             product_to_user = ProductToUser.objects.filter(user_id=user[0], linked_product=user_product[0]).first()
+
+            #  if no result is returned, create an entry on db
             if not product_to_user:
                 new_prod_user = ProductToUser(user_id=user[0], linked_product=user_product[0], desired_price=user_data["desired_price"], auth_token = self.auth_token())
                 new_prod_user.save()
@@ -93,6 +105,8 @@ class IndexView(View):
                         fail_silently=False,)
 
             else:
+                #  check if value inputed by user as desired_price matches the one currently stored on db.
+                # if it doesn't match change value of price_alt to True
                 if user_data["desired_price"] != product_to_user.desired_price:
                     product_to_user.price_alt = "True"
                 else:
@@ -361,15 +375,24 @@ class ProductDetailView(FormMixin, DetailView):
         return script, div
 
     def get_current_price(self, price_history):
+        # reverse received list and get the last element
         last_date, last_price = next(reversed(price_history.items()))
         return last_price
 
+    # this func will be used when a post request is received from the update price form
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return HttpResponseForbidden()
+
+        # from request get object and form
         self.object = self.get_object()
         form = self.get_form()
+
+        # validade form
         if form.is_valid():
+
+            # change price in db and generate a new graph with new desired price. 
+            # pass new script and div components of graph as context to html
             new_desired_price = int(request.POST["new_price"])
             self.object.desired_price = new_desired_price
             self.object.price_email_sent = False
@@ -397,6 +420,7 @@ class DeleteProductView(DeleteView):
     template_name = "checker/delete_confirm.html"
     success_url = reverse_lazy("delete-successful")
 
+    # get context data and pass it to html template
     def get_context_data(self,**kwargs):
         context=super().get_context_data(**kwargs)
         context['title'] = self.object.linked_product.name.title()

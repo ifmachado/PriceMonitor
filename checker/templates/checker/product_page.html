@@ -1,4 +1,8 @@
-<!-- Product section-->
+{% comment %}  this html extends base.html and will insert code sections particular to this page into
+ the template blocks that were predetermined on "base" {% endcomment %}
+
+ {% comment %} it also loads not only the static template tag but the custom tag percentages - SEE templatetags/percentages.py {% endcomment %}
+
 {% extends "base_product.html" %}
 {% load static %}
 {% load percentages %}
@@ -14,25 +18,33 @@ Fashion Price Checker
 
 
 {% block content %}
+<!-- Product section-->
 <section class="py-2">
     <div class="container px-2 px-lg-3 my-3">
         <div class="row gx-4 gx-lg-5 align-items-start">
+            {% comment %}  absolute path reference to  image in static files folder {% endcomment %}
             <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="{%static product.img %}" alt="..." /></div>
                 <div class="col-md-6">
+                    {% comment %} display value from title var in the context dict passed to this html {% endcomment %}
                     <h1 class="display-5 fw-bolder"> {{ title }}</h1>
                     <div class="fs-5 mb-4">
+                    {% comment %} display value from current_price var in the context dict passed to this html {% endcomment %}
                         <span>Current price: €{{ current_price }}</span>
                     </div>
                     <div class="mb-5">
+                    {% comment %} the div snippet returned by Bokeh graph {% endcomment %}
                     {{div|safe}}   
                     </div>
                     <div class="d-flex flex-column">
                         <h6>Change Target Price:</h6>
                         <div class="input-group mb-5">
                             <div class="input-group-prepend">
-                            
+
+                            <!-- Change Price Form-->
                             <form method="POST">
                             {% csrf_token %}
+
+                            {% comment %} if hidden fields, display here {% endcomment %}
                             {% for field in form.hidden_fields %}
                                 {{ field }}
                             {% endfor %}
@@ -45,8 +57,10 @@ Fashion Price Checker
                                 <button class="btn btn-primary btn-sm">Submit</button>
                             </div>
                             </form>
+                            {% comment %}  uses custom tag percentage to perform calculations on the value of current_price var, that was passed into this template through context dict{% endcomment %}
                             <p style="font-size:14px;font-style:italic;"> Recommended Target Price range: €{{current_price|discount:60}} to {{current_price|discount:20}}</p>
                             <div class="mt-5">
+                                {% comment %}  absolute path reference to confirm delete page with the auth token as arg {% endcomment %}
                                 <a href ="{% url "confirm-delete" product_auth%}"
                                     <button class="btn btn-primary btn-md">Stop monitoring</button>
                                 </a>
@@ -58,11 +72,13 @@ Fashion Price Checker
         </div>
     </div>
 </section>
+{% comment %} import bokeh specific js scripts {% endcomment %}
 <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"
             crossorigin="anonymous"></script>
 <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"
             crossorigin="anonymous"></script>
 <script src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.3.min.js"
             crossorigin="anonymous"></script>
+{% comment %} the script snippet returned by Bokeh graph {% endcomment %}
 {{ script | safe }}
 {% endblock %}

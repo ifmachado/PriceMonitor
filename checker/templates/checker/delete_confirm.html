@@ -1,19 +1,14 @@
-<!-- Product section-->
+{% comment %}  this html extends base.html and will insert code sections particular to this page into
+ the template blocks that were predetermined on "base" {% endcomment %}
 {% extends "base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
-{% load widget_tweaks %}
 
 {% block page-title %}
 Fashion Price Checker
 {% endblock %}
 
-{% comment %} {% block css_files %} 
-<link rel="stylesheet" href="{%static "blog/post.css"%}">
-<link rel="stylesheet" href="{%static "blog/index.css"%}">
-{% endblock %} {% endcomment %}
 
-
+{% comment %} this form will record and send as a POST request the user's option to stop monitoring a product's price or not {% endcomment %}
 {% block header %}
 <form method="post">
     {% csrf_token %}
