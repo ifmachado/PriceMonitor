@@ -14,7 +14,7 @@ import requests
 import shutil
 import secrets
 import os
-from django.views.generic.base import TemplateView 
+from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
 from django.views import View
 import pygal
@@ -26,32 +26,29 @@ from bokeh.plotting import figure
 import pandas as pd
 
 
-
-
-
 # Create your views here.
 
-#Dict stores HTML and CSS info extracted from product URLs so the correct tags can be found when scraping.
+# Dict stores HTML and CSS info extracted from product URLs so the correct tags can be found when scraping.
 brand_specs = {'Frankie_Shop':
-                {'price': ("strong", {"class": "prd-DetailPrice_Price"}),
-                 'image': ("div", {"class": "prd-Detail_Image"})
+               {'price': ("strong", {"class": "prd-DetailPrice_Price"}),
+                'image': ("div", {"class": "prd-Detail_Image"})
                 },
-            'Ganni':
-                 {'price_sale': ("span", {"class": "product-price__sales"}),
-                 'price_regular': ("span", {"class": "product-price__normal"}),
-                 'image' : ("div", {"class": "b-product-images__large"}),
-                 },
-            'Reformation':
-                {
-                    'price': ("span", {"class": "price--reduced"}),
-                    'image': ("div", {"class": "pdp__images-main-container"})
-                }
-            }
+               'Ganni':
+               {'price_sale': ("span", {"class": "product-price__sales"}),
+                'price_regular': ("span", {"class": "product-price__normal"}),
+                'image': ("div", {"class": "b-product-images__large"}),
+                },
+               'Reformation':
+               {
+                   'price': ("span", {"class": "price--reduced"}),
+                   'image': ("div", {"class": "pdp__images-main-container"})
+               }
+               }
 
 
 class IndexView(View):
     # func will be called when post request is received
-    def post(self,request):
+    def post(self, request):
         # instanciate the user form and retrieve contents from post request
         user_form = UserForm(request.POST)
         my_url = ""
@@ -64,45 +61,51 @@ class IndexView(View):
             # scrape url provided by user to fetch name, brand, and image
             user_url = user_data['product_url']
             soup = self.scrape_from_url(user_url)
-            product_name,product_brand = self.fetch_name_brand(user_url, soup)
+            product_name, product_brand = self.fetch_name_brand(user_url, soup)
             out_src, new_img = self.fetch_image(product_brand, soup)
-            
+
             # get or create object from Product db with scrapped values for name, brand and img
-            user_product=Product.objects.get_or_create(
-                product_url=user_url, 
-                name=product_name, 
+            user_product = Product.objects.get_or_create(
+                product_url=user_url,
+                name=product_name,
                 brand=product_brand,
-                img_out_src=out_src, 
+                img_out_src=out_src,
                 img=new_img)
 
             # get or create object from User db with post request value for email
-            user = User.objects.get_or_create(user_email=user_data['user_email'])
+            user = User.objects.get_or_create(
+                user_email=user_data['user_email'])
 
             # fetch current price and save as a new entry on PriceHistory db
             first_price = self.fetch_price(user_product[0], soup)
-            product_price = PriceHistory(linked_product=user_product[0], price=first_price)
+            product_price = PriceHistory(
+                linked_product=user_product[0], price=first_price)
             product_price.save()
 
             # fecth product to user entry from db based on user and linked_product
-            product_to_user = ProductToUser.objects.filter(user_id=user[0], linked_product=user_product[0]).first()
+            product_to_user = ProductToUser.objects.filter(
+                user_id=user[0], linked_product=user_product[0]).first()
 
             #  if no result is returned, create an entry on db
             if not product_to_user:
-                new_prod_user = ProductToUser(user_id=user[0], linked_product=user_product[0], desired_price=user_data["desired_price"], auth_token = self.auth_token())
+                new_prod_user = ProductToUser(
+                    user_id=user[0], linked_product=user_product[0], desired_price=user_data["desired_price"], auth_token=self.auth_token())
                 new_prod_user.save()
 
-                #redirect to thank-you URL
+                # redirect to thank-you URL
                 base_url = reverse('submit-successful')  # 1 thank-you/
-                query_string =  urlencode({'auth': new_prod_user.auth_token})  # 2 auth=bhejwbhr374637hfd
-                my_url = '{}?{}'.format(base_url, query_string)  # 3 /thank-you/?auth=bhejwbhr374637hfd
+                # 2 auth=bhejwbhr374637hfd
+                query_string = urlencode({'auth': new_prod_user.auth_token})
+                # 3 /thank-you/?auth=bhejwbhr374637hfd
+                my_url = '{}?{}'.format(base_url, query_string)
 
                 # sends email to user confirming submition success.
                 send_mail(
-                        'Price Monitor - you started monitoring a new product',
-                        f'Hey! \nYou\'re now monitoring prices for {user_product[0].name.title()}.\nHere is your product\'s link: http://127.0.0.1:8000/auth={new_prod_user.auth_token}',
-                        'fashionpricetracker@gmail.com',
-                        [user[0].user_email],
-                        fail_silently=False,)
+                    'Price Monitor - you started monitoring a new product',
+                    f'Hey! \nYou\'re now monitoring prices for {user_product[0].name.title()}.\nHere is your product\'s link: http://127.0.0.1:8000/auth={new_prod_user.auth_token}',
+                    'fashionpricetracker@gmail.com',
+                    [user[0].user_email],
+                    fail_silently=False,)
 
             else:
                 #  check if value inputed by user as desired_price matches the one currently stored on db.
@@ -111,25 +114,28 @@ class IndexView(View):
                     product_to_user.price_alt = "True"
                 else:
                     product_to_user.price_alt = "False"
-                
+
                 product_to_user.save()
 
-                #redirect to submit repeat URL
+                # redirect to submit repeat URL
                 base_url = reverse('duplicate')  # 1 duplicate/
-                query_string =  urlencode({'auth': product_to_user.auth_token, 'new-price': user_data["desired_price"]}) # 2 auth=bhejwbhr374637hfd
-                my_url = '{}?{}'.format(base_url, query_string)  # 3 /duplicate/?auth=bhejwbhr374637hfd&new-pre=120
+                # 2 auth=bhejwbhr374637hfd
+                query_string = urlencode(
+                    {'auth': product_to_user.auth_token, 'new-price': user_data["desired_price"]})
+                # 3 /duplicate/?auth=bhejwbhr374637hfd&new-pre=120
+                my_url = '{}?{}'.format(base_url, query_string)
 
             return redirect(my_url)
 
     # when page receives a GET request, it renders the class based user/product form and the index hmtl, passing the form as context.
-    def get(self,request):
+    def get(self, request):
         user_form = UserForm(request.GET)
-        return render(request, "checker/index.html", {'form' : user_form})
+        return render(request, "checker/index.html", {'form': user_form})
 
-    def scrape_from_url(self, product_url):  
+    def scrape_from_url(self, product_url):
         # headers included to prevent page from block the script when scraping.
-        headers = {'user-agent': 
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
+        headers = {'user-agent':
+                   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
 
         # get HTML document from URL usign requests lib and passing headers as arg
         r = requests.get(url=product_url, headers=headers)
@@ -139,7 +145,7 @@ class IndexView(View):
 
         return soup
 
-    def fetch_name_brand(self,product_url, soup):
+    def fetch_name_brand(self, product_url, soup):
         # check which brand name is in URL to define brand name:
         if "ganni" in product_url:
             brand = "Ganni"
@@ -158,7 +164,7 @@ class IndexView(View):
 
         return (name, brand)
 
-    def fetch_image(self,brand,soup):
+    def fetch_image(self, brand, soup):
 
         # get image class from dict
         image_arg_one = (brand_specs[brand]['image'])[0]
@@ -167,22 +173,22 @@ class IndexView(View):
         # find elements with the correct class name
         div_tag = soup.select(f"{image_arg_one}.{image_arg_two}")
 
-        #from the list of divs, get only the img tags.
+        # from the list of divs, get only the img tags.
         images = div_tag[0].find('img')
 
         if brand == 'Reformation':
-            #src attribute for Reformation brand is declared as data-src instead of src in HTML.
+            # src attribute for Reformation brand is declared as data-src instead of src in HTML.
             img_src = images['data-src']
         else:
-            #from the img tag, get only the src attribute.
+            # from the img tag, get only the src attribute.
             img_src = images['src']
 
-        #configure source path in proper http:// or https:// format.
+        # configure source path in proper http:// or https:// format.
         img_src_link = "http://"
 
         if img_src.startswith("https://") or img_src.startswith("http://"):
             img_src_link = img_src
-            
+
         elif img_src.startswith("//"):
             after_http = img_src.lstrip("//")
             img_src_link += after_http
@@ -190,11 +196,12 @@ class IndexView(View):
         else:
             img_src_link += img_src
 
-        #configure name of image file to be saved
+        # configure name of image file to be saved
         file_name = img_src_link.split("/")[-1].split(".")[0] + ".jpg"
 
-        #configure path of image file to be saved
-        file_path = os.path.join("checker/static/checker/images/product_images/", file_name)
+        # configure path of image file to be saved
+        file_path = os.path.join(
+            "checker/static/checker/images/product_images/", file_name)
 
         # Open the url image, set stream to True, this will return the stream content.
         r = requests.get(img_src_link, stream=True)
@@ -208,33 +215,33 @@ class IndexView(View):
             with open(file_path, 'wb') as file:
                 shutil.copyfileobj(r.raw, file)
 
-        #full path
-        file_path= "checker/images/product_images/" + file_name
+        # full path
+        file_path = "checker/images/product_images/" + file_name
 
         return (img_src, file_path)
 
-    def fetch_price(self,product, soup):
+    def fetch_price(self, product, soup):
 
-        #get brand attribure from product object
+        # get brand attribure from product object
         brand = product.brand
 
-        #Ganni has two types of tags classes that hold the product's price depending if it's on sale.
+        # Ganni has two types of tags classes that hold the product's price depending if it's on sale.
         if brand == 'Ganni':
             arg = ['price_sale', 'price_regular']
         else:
             arg = ['price']
 
-        #loop through args and get corresponding tag class from dict
+        # loop through args and get corresponding tag class from dict
         for tag in arg:
             price_arg_one = (brand_specs[brand][tag])[0]
             price_arg_two = (brand_specs[brand][tag][1]['class'])
 
             # find specific tag in parsed content and get the text element out of it.
             price = soup.find_all(price_arg_one, price_arg_two)[0].text
-            if price == "": 
+            if price == "":
                 continue
 
-            #casting price value as and int and removing any extra characters
+            # casting price value as and int and removing any extra characters
             int_price = int(''.join(v for v in price if v.isdigit()))
 
             return int_price
@@ -245,10 +252,12 @@ class IndexView(View):
         return user_token
 
 # Renders submit_success HTML, gets auth token passed through URL and passed that as context to HTML.
+
+
 class ThanksView(View):
     def get(self, request):
         product_auth = request.GET.get('auth')
-        return render(request, "checker/submit_success.html", {'product_auth' : product_auth})
+        return render(request, "checker/submit_success.html", {'product_auth': product_auth})
 
 
 class RepeatedSubmission(View):
@@ -256,24 +265,26 @@ class RepeatedSubmission(View):
     def get_object(self):
         return ProductToUser.objects.get(pk=self.request.GET.get('auth'))
 
-    #get product title from Product object attribute
+    # get product title from Product object attribute
     def get_title(self):
         return self.get_object().linked_product.name.title()
 
     # when page receives a GET request, it renders the submit_duplicate hmtl, passing the the ProductToUser object and the product title as context.
-    def get(self,request):
-        return render(request, "checker/submit_duplicate.html", {'product' : self.get_object(), 'title' : self.get_title()})
+    def get(self, request):
+        return render(request, "checker/submit_duplicate.html", {'product': self.get_object(), 'title': self.get_title()})
 
     # when POST request is received from form (meaning user submitted a new price),
     # it replaces the object's desired_price attribute value with the new price submitted.
     # also renderes the submit_change_successful.html with the ProducttoUSer object as context.
-    def post(self,request):
+    def post(self, request):
         object = self.get_object()
         object.desired_price = self.request.GET.get('new-price')
         object.save()
-        return render(request, "checker/submit_change_successful.html", {'product' : object})
+        return render(request, "checker/submit_change_successful.html", {'product': object})
 
-#View for product page, it extends Django's generic DetailView as it's ideal to displaying info related to a single object from a Model.
+# View for product page, it extends Django's generic DetailView as it's ideal to displaying info related to a single object from a Model.
+
+
 class ProductDetailView(FormMixin, DetailView):
     template_name = "checker/product_page.html"
     model = ProductToUser
@@ -282,34 +293,37 @@ class ProductDetailView(FormMixin, DetailView):
     def get_success_url(self):
         return reverse('product-page', kwargs={'pk': self.object.pk})
 
-    #adding auth_token, product object, title, price and graph to context to be passed to HTML
+    # adding auth_token, product object, title, price and graph to context to be passed to HTML
     def get_context_data(self, **kwargs):
-     context = super(ProductDetailView, self).get_context_data(**kwargs)
-     product_id = self.object.linked_product.id
-     price_history = PriceHistory.objects.filter(linked_product__id=product_id)
-     product_auth = self.object.auth_token
-     context["form"] = self.get_form()
-     context["product_auth"] = product_auth
-     context["product"] = self.object.linked_product
-     context["title"] = self.object.linked_product.name.title()
-     context["current_price"] = self.get_current_price(self.get_price_to_date(price_history))
-     context["script"], context["div"] = self.generate_graph(price_history, context["current_price"], self.object.desired_price)
-     return context
+        context = super(ProductDetailView, self).get_context_data(**kwargs)
+        product_id = self.object.linked_product.id
+        price_history = PriceHistory.objects.filter(
+            linked_product__id=product_id)
+        product_auth = self.object.auth_token
+        context["form"] = self.get_form()
+        context["product_auth"] = product_auth
+        context["product"] = self.object.linked_product
+        context["title"] = self.object.linked_product.name.title()
+        context["current_price"] = self.get_current_price(
+            self.get_price_to_date(price_history))
+        context["script"], context["div"] = self.generate_graph(
+            price_history, context["current_price"], self.object.desired_price)
+        return context
 
-    #gets last price in DB for specific product and generates a price history graph
+    # gets last price in DB for specific product and generates a price history graph
     def get_price_to_date(self, price_history):
         price_to_date = OrderedDict()
-        
-        #loop through all the PriceHistory objects in the price_history list.
+
+        # loop through all the PriceHistory objects in the price_history list.
         for entry in price_history:
 
-            # get object's date attribute 
+            # get object's date attribute
             entry_date = entry.price_date
 
             # get object's price attribute
             entry_price = entry.price
 
-            #add date and price to OrderedDict
+            # add date and price to OrderedDict
             price_to_date[entry_date] = entry_price
 
         return price_to_date
@@ -317,7 +331,7 @@ class ProductDetailView(FormMixin, DetailView):
     def sort_dict_to_lists(self, price_history):
         date_list = []
         price_list = []
-    
+
         # loop through price_to_date key,value pairs to add each date to date_list and price to price_list
         for key, value in price_history.items():
             if key not in date_list:
@@ -334,42 +348,42 @@ class ProductDetailView(FormMixin, DetailView):
 
         formatted_dates = []
 
-        #format datetime objects in list
+        # format datetime objects in list
         for date in date_list:
             formatted_dates.append(pd.to_datetime(date))
 
-
         # create a new plot with a title and axis labels
-        p = figure(title="Price History", x_axis_type="datetime", width=500, height=450)
-
+        p = figure(title="Price History",
+                   x_axis_type="datetime", width=500, height=450)
 
         # add multiple renderers - one line and one circle
         if len(date_list) > 1:
-            p.line(formatted_dates, price_list, legend_label="History", color="#0d6efd", line_width=2)
+            p.line(formatted_dates, price_list, legend_label="History",
+                   color="#0d6efd", line_width=2)
         else:
-            p.circle(formatted_dates[0], price_list[0], legend_label="History", color="#0d6efd", size=20)
+            p.circle(formatted_dates[0], price_list[0],
+                     legend_label="History", color="#0d6efd", size=20)
 
+        p.circle(date_list[-1], desired_price,
+                 legend_label="Target Price", size=20, color="#f695d9")
 
-        p.circle(date_list[-1], desired_price, legend_label="Target Price", size=20, color="#f695d9")
-
-        #set numbers range on y axis (prices)
+        # set numbers range on y axis (prices)
         p.y_range = Range1d(1, (current_price + 100))
 
-        #format y and x axis
+        # format y and x axis
         p.yaxis[0].formatter = NumeralTickFormatter(format="€0,0")
         p.xaxis[0].formatter = DatetimeTickFormatter(years="%d/%m/%Y",
-                                          months="%d/%m/%Y",
-                                          days="%d/%m/%Y",
-                                          hours="%d/%m/%Y",
-                                          hourmin="%d/%m/%Y",
-                                          minutes="%d/%m/%Y",
-                                          minsec="%d/%m/%Y",
-                                          seconds="%d/%m/%Y",
-                                          milliseconds="%d/%m/%Y",
-                                          microseconds="%d/%m/%Y")
+                                                     months="%d/%m/%Y",
+                                                     days="%d/%m/%Y",
+                                                     hours="%d/%m/%Y",
+                                                     hourmin="%d/%m/%Y",
+                                                     minutes="%d/%m/%Y",
+                                                     minsec="%d/%m/%Y",
+                                                     seconds="%d/%m/%Y",
+                                                     milliseconds="%d/%m/%Y",
+                                                     microseconds="%d/%m/%Y")
 
-
-        #get script and div boken components so they can be embedded on html
+        # get script and div boken components so they can be embedded on html
         script, div = components(p)
 
         return script, div
@@ -391,7 +405,7 @@ class ProductDetailView(FormMixin, DetailView):
         # validade form
         if form.is_valid():
 
-            # change price in db and generate a new graph with new desired price. 
+            # change price in db and generate a new graph with new desired price.
             # pass new script and div components of graph as context to html
             new_desired_price = int(request.POST["new_price"])
             self.object.desired_price = new_desired_price
@@ -399,14 +413,17 @@ class ProductDetailView(FormMixin, DetailView):
             product_id = self.object.linked_product.id
             self.object.save()
             context = self.get_context_data(**kwargs)
-            price_history = PriceHistory.objects.filter(linked_product__id=product_id)
-            current_price = self.get_current_price(self.get_price_to_date(price_history))
-            context['script'], context ['div'] =  self.generate_graph(price_history, current_price, new_desired_price)
+            price_history = PriceHistory.objects.filter(
+                linked_product__id=product_id)
+            current_price = self.get_current_price(
+                self.get_price_to_date(price_history))
+            context['script'], context['div'] = self.generate_graph(
+                price_history, current_price, new_desired_price)
             return render(request, "checker/product_page.html", context)
 
         else:
             return self.form_invalid(form)
-            
+
     def form_valid(self, form):
         # Here, we would record the user's interest using the message
         # passed in form.cleaned_data['message']
@@ -415,43 +432,50 @@ class ProductDetailView(FormMixin, DetailView):
 # Renders delete-confirm html, deletes the specific instance of Product to User model (object is identified through pk passed through URL to this view)
 # and redirects to success url
 # Product title is passed as context to delete-confirm html.
+
+
 class DeleteProductView(DeleteView):
     model = ProductToUser
     template_name = "checker/delete_confirm.html"
     success_url = reverse_lazy("delete-successful")
 
     # get context data and pass it to html template
-    def get_context_data(self,**kwargs):
-        context=super().get_context_data(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context['title'] = self.object.linked_product.name.title()
         return context
 
 # Delete success page only requires a html to be rendered.
+
+
 class DeleteSuccessful(TemplateView):
     template_name = "checker/delete_success.html"
 
+
 class ContactView(View):
     # when page receives a GET request, it renders the class based contact form and the contact hmtl, passing the form as context.
-    def get(self,request):
+    def get(self, request):
         contact_form = ContactForm(request.GET)
-        return render(request, "checker/contact.html", {'form' : contact_form})
+        return render(request, "checker/contact.html", {'form': contact_form})
 
-    # when POST request is received from form, it stores its info under specific vars 
+    # when POST request is received from form, it stores its info under specific vars
     # and sends email to admin email with user message details.
     def post(self, request):
         user_data = request.POST
         user_name = user_data['user_name']
         user_email = user_data['user_email']
-        message_subject= user_data['subject']
+        message_subject = user_data['subject']
         message_content = user_data['message']
         send_mail(
             'New user message',
-            f'Name:{user_name}\nEmail:{user_email}\nSubject:{message_subject}\nMessage:{message_content}', 
+            f'Name:{user_name}\nEmail:{user_email}\nSubject:{message_subject}\nMessage:{message_content}',
             'fashionpricetracker@gmail.com',
             ['fashionpricetracker@gmail.com'],
             fail_silently=False,)
         return redirect('contact-us/success')
 
 # Contact success page only requires a html to be rendered.
+
+
 class ContactSuccessView(TemplateView):
     template_name = "checker/contact_success.html"

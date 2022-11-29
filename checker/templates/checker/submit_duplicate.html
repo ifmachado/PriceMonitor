@@ -1,60 +1,53 @@
-{% comment %}  this html extends base.html and will insert code sections particular to this page into
- the template blocks that were predetermined on "base" {% endcomment %}
-
 {% extends "base.html" %}
 {% load static %}
+{% comment %}  this html extends base.html and will insert code sections particular to this page into
+the template blocks that were predetermined on "base" {% endcomment %}
 
-
-{% block page-title %}
-Fashion Price Checker
-{% endblock %}
-
-
+{% block page-title %}Fashion Price Checker{% endblock %}
 {% block header %}
-<h1 class="mb-5">
-    {% comment %} check value of attribute price_alt to display text accordingly {% endcomment %}
+    <h1 class="mb-5">
+        {% comment %} check value of attribute price_alt to display text accordingly {% endcomment %}
+        {% if product.price_alt == "False" %}
+            Woops! Looks like you're already monitoring this product.
+        {% else %}
+            Looks like you've submitted a new target price for "{{ title }}"
+        {% endif %}
+    </h1>
+    <h3 class="mb-5">
+        {% if product.price_alt == "False" %}
+            Click below to see it:
+        {% else %}
+            Would you like to change it?
+        {% endif %}
+    </h3>
+    {% comment %} if user hasn't changed target price, display button to go to product url {% endcomment %}
     {% if product.price_alt == "False" %}
-    Woops! Looks like you're already monitoring this product.
-    {% else%}
-    Looks like you've submitted a new target price for "{{ title }}"
-    {% endif %}
-</h1>
-<h3 class="mb-5">
-    {% if product.price_alt == "False" %}
-    Click below to see it:
-    {% else%}
-    Would you like to change it?
-    {% endif %}
-</h3>
-{% comment %} if user hasn't changed target price, display button to go to product url {% endcomment %}
-{% if product.price_alt == "False" %}
-<a href ="{% url "product-page" product.auth_token %}"
-    <button class="btn btn-primary btn-md">Go to product</button>
-</a>
-{% comment %} if user has changed target price, confirm the change with y/n buttons. send that answer as a post request {% endcomment %}
-{% else%}
-<div class="container">
-    <div class="row">
-        <div class="col-lg-6">
-            <form method="post">
-            {% csrf_token %}
-                <button type="submit" class="btn btn-primary btn-lg">Yes</button>  
-            </form>
+        <a href ="{% url "product-page" product.auth_token %}"
+            <button class="btn btn-primary btn-md">Go to product</button>
+        </a>
+        {% comment %} if user has changed target price, confirm the change with y/n buttons. send that answer as a post request {% endcomment %}
+    {% else %}
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-lg">Yes</button>
+                    </form>
+                </div>
+                <div class="col-lg-6">
+                    {% comment %}  absolute path reference to product page with the auth token as arg {% endcomment %}
+                    <a href ="{% url "product-page" product.auth_token %}"
+                        <button class="btn btn-primary btn-lg">No</button>
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="col-lg-6">
-            {% comment %}  absolute path reference to product page with the auth token as arg {% endcomment %}
-            <a href ="{% url "product-page" product.auth_token%}"
-                <button class="btn btn-primary btn-lg">No</button>
-            </a>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-{% endblock %}      
-{% block content %}          
-<section class="showcase">
-    {% comment %} include here the code snippet from how_to.html {% endcomment %}
-    {% include "./includes/how_to.html"%}
-</section>
+    {% endif %}
+{% endblock %}
+{% block content %}
+    <section class="showcase">
+        {% comment %} include here the code snippet from how_to.html {% endcomment %}
+        {% include "./includes/how_to.html" %}
+    </section>
 {% endblock %}

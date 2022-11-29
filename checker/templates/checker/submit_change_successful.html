@@ -1,25 +1,19 @@
-{% comment %}  this html extends base.html and will insert code sections particular to this page into
- the template blocks that were predetermined on "base" {% endcomment %}
-
-
 {% extends "base.html" %}
 {% load static %}
+{% comment %}  this html extends base.html and will insert code sections particular to this page into
+the template blocks that were predetermined on "base" {% endcomment %}
 
-{% block page-title %}
-Fashion Price Checker
-{% endblock %}
-
-
+{% block page-title %}Fashion Price Checker{% endblock %}
 {% block header %}
-<h1 class="mb-5">Price updated successfully!</h1>
-{% comment %}  absolute path reference to product page with the auth token as arg {% endcomment %}
-<a href ="{% url "product-page" product.auth_token%}"
-    <button class="btn btn-primary btn-md">Go to product</button>
-</a>
+    <h1 class="mb-5">Price updated successfully!</h1>
+    {% comment %}  absolute path reference to product page with the auth token as arg {% endcomment %}
+    <a href ="{% url "product-page" product.auth_token %}"
+        <button class="btn btn-primary btn-md">Go to product</button>
+    </a>
 {% endblock %}
 {% block content %}
-<section class="showcase">
-    {% comment %} include here the code snippet from how_to.html {% endcomment %}
-    {% include "./includes/how_to.html"%}
-</section>
+    <section class="showcase">
+        {% comment %} include here the code snippet from how_to.html {% endcomment %}
+        {% include "./includes/how_to.html" %}
+    </section>
 {% endblock %}

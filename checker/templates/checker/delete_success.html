@@ -1,19 +1,13 @@
-{% comment %}  this html extends base.html and will insert code sections particular to this page into
- the template blocks that were predetermined on "base" {% endcomment %}
-
 {% extends "base.html" %}
 {% load static %}
+{% comment %}  this html extends base.html and will insert code sections particular to this page into
+the template blocks that were predetermined on "base" {% endcomment %}
 
-{% block page-title %}
-Fashion Price Checker
-{% endblock %}
-
-
-
+{% block page-title %}Fashion Price Checker{% endblock %}
 {% block header %}
-<h3 class="mb-5"> We stopped monitoring your product.</h3>
-{% comment %}  absolute path reference to home {% endcomment %}
-<a href ="{% url 'starting-page' %}"
-    <button class="btn btn-primary btn-md">Track another product</button>
-</a>
+    <h3 class="mb-5">We stopped monitoring your product.</h3>
+    {% comment %}  absolute path reference to home {% endcomment %}
+    <a href ="{% url 'starting-page' %}"
+        <button class="btn btn-primary btn-md">Track another product</button>
+    </a>
 {% endblock %}

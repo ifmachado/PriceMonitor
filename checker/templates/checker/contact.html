@@ -1,47 +1,42 @@
-{% comment %}  this html extends base.html and will insert code sections particular to this page into
- the template blocks that were predetermined on "base" {% endcomment %}
 
 {% extends "base_product.html" %}
 {% load static %}
 {% load widget_tweaks %}
+{% comment %}  this html extends base.html and will insert code sections particular to this page into
+the template blocks that were predetermined on "base" {% endcomment %}
 
-
-{% block page-title %}
-Fashion Price Checker
-{% endblock %}
-
-
+{% block page-title %}Fashion Price Checker{% endblock %}
 {% block content %}
-{% comment %}  absolute path reference to  image in static files folder {% endcomment %}
-<div class="content" style="background: url({% static "checker/images/background_contact.jpg" %})  no-repeat center center fixed; background-size: cover;">
-  <div class="container">
-    <div class="row align-items-stretch justify-content-center no-gutters">
-      <div class="col-md-7">
-        <div class="form contact-wrap p-5 h-100">
-          <h3 class="text-center mb-3">Let's Talk</h3>
-        <!-- Contact Form -->
-        {% comment %} will do a post action to the contact url {% endcomment %}
-        <form method="POST" action="{% url "contact-us" %}" class="mb-5"  id="contactForm" name="contactForm">
-            {% csrf_token %}
-
-            {% comment %} display hidden fields {% endcomment %}
-            {% for hidden in form.hidden_fields %}
-              {{ hidden }}
-            {% endfor %}
-
-            {% comment %} display fields in the format: label in one line, input, errors (if any) in the next ones 
-            adding class 'form-control' as styling {% endcomment %}
-            {% for field in form.visible_fields %}
-              <div class="form-group">
-                <div class="mb-3">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field|add_class:'form-control' }}
-                {% if field.errors %}
-                  <span class="text-center text-danger mb-3">{{ error }}</span>
-                {% endif %}
+  {% comment %}  absolute path reference to  image in static files folder {% endcomment %}
+  <div class="content"
+       style="background: url({% static "checker/images/background_contact.jpg" %})  no-repeat center center fixed;
+              background-size: cover">
+    <div class="container">
+      <div class="row align-items-stretch justify-content-center no-gutters">
+        <div class="col-md-7">
+          <div class="form contact-wrap p-5 h-100">
+            <h3 class="text-center mb-3">Let's Talk</h3>
+            <!-- Contact Form -->
+            {% comment %} will do a post action to the contact url {% endcomment %}
+            <form method="POST"
+                  action="{% url "contact-us" %}"
+                  class="mb-5"
+                  id="contactForm"
+                  name="contactForm">
+              {% csrf_token %}
+              {% comment %} display hidden fields {% endcomment %}
+              {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+              {% comment %} display fields in the format: label in one line, input, errors (if any) in the next ones
+              adding class 'form-control' as styling {% endcomment %}
+              {% for field in form.visible_fields %}
+                <div class="form-group">
+                  <div class="mb-3">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field|add_class:'form-control' }}
+                    {% if field.errors %}<span class="text-center text-danger mb-3">{{ error }}</span>{% endif %}
+                  </div>
                 </div>
-              </div>
-            {% endfor %}
+              {% endfor %}
               <div class="row justify-content-center mt-2">
                 <div class="col-md-5 form-group text-center">
                   <input type="submit" value="Send Message" class="btn btn-primary btn-lg">
@@ -49,9 +44,9 @@ Fashion Price Checker
                 </div>
               </div>
             </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-  {% endblock %}
+{% endblock %}
