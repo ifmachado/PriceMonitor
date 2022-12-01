@@ -6,3 +6,4 @@ environ==1.0
 pandas==1.5.1
 requests==2.27.1
 django-widget-tweaks==1.4.12
+django-crontab==0.7.1

@@ -6,7 +6,6 @@ from urllib.parse import urlencode
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-import urllib3
 from .forms import ContactForm, ProductUpdateForm, UserForm
 from .models import Product, User, PriceHistory, ProductToUser
 from bs4 import BeautifulSoup
@@ -17,7 +16,6 @@ import os
 from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
 from django.views import View
-import pygal
 from django.views.generic.edit import DeleteView, FormMixin
 from django.core.mail import send_mail
 from bokeh.embed import components
