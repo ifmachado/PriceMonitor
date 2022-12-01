@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'checker',
     'widget_tweaks',
-    'crispy_forms',
     'django_crontab',
 ]
 
