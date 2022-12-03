@@ -1,7 +1,4 @@
-import base64
 from collections import OrderedDict
-from datetime import date, datetime
-import io
 from urllib.parse import urlencode
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect

@@ -1,4 +1,3 @@
-from unittest.util import _MAX_LENGTH
 from django import forms
 
 # class based form for starting page. This info is used by Product, User and Product to User models.
