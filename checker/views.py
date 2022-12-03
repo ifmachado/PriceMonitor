@@ -29,8 +29,7 @@ brand_specs = {'Frankie_Shop':
                 'image': ("div", {"class": "prd-Detail_Image"})
                 },
                'Ganni':
-               {'price_sale': ("span", {"class": "product-price__sales"}),
-                'price_regular': ("span", {"class": "product-price__normal"}),
+               {'price': ("span", {"class": "product-price__normal"}),
                 'image': ("div", {"class": "b-product-images__large"}),
                 },
                'Reformation':
@@ -219,27 +218,18 @@ class IndexView(View):
 
         # get brand attribure from product object
         brand = product.brand
+        
+        # get correct tag and class name
+        price_arg_one = (brand_specs[brand]['price'])[0]
+        price_arg_two = (brand_specs[brand]['price'][1]['class'])
 
-        # Ganni has two types of tags classes that hold the product's price depending if it's on sale.
-        if brand == 'Ganni':
-            arg = ['price_sale', 'price_regular']
-        else:
-            arg = ['price']
+        # find specific tag in parsed content and get the text element out of it.
+        price = soup.find_all(price_arg_one, price_arg_two)[0].text
 
-        # loop through args and get corresponding tag class from dict
-        for tag in arg:
-            price_arg_one = (brand_specs[brand][tag])[0]
-            price_arg_two = (brand_specs[brand][tag][1]['class'])
+        # casting price value as and int and removing any extra characters
+        int_price = int(''.join(v for v in price if v.isdigit()))
 
-            # find specific tag in parsed content and get the text element out of it.
-            price = soup.find_all(price_arg_one, price_arg_two)[0].text
-            if price == "":
-                continue
-
-            # casting price value as and int and removing any extra characters
-            int_price = int(''.join(v for v in price if v.isdigit()))
-
-            return int_price
+        return int_price
 
     # generate token for user to product relation identification
     def auth_token(self):
