@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
+from django.http import Http404
 from .forms import ContactForm, ProductUpdateForm, UserForm
 from .models import Product, User, PriceHistory, ProductToUser
 from bs4 import BeautifulSoup
@@ -274,6 +275,7 @@ class ProductDetailView(FormMixin, DetailView):
     template_name = "checker/product_page.html"
     model = ProductToUser
     form_class = ProductUpdateForm
+
 
     def get_success_url(self):
         return reverse('product-page', kwargs={'pk': self.object.pk})
